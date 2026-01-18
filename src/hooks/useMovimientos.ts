@@ -14,25 +14,39 @@ export function useMovimientos() {
             // 2. Update the inventory count
             const { data: invData, error: invFetchError } = await supabase
                 .from('inventario')
-                .select('cantidad')
+                .select('*')
                 .eq('camisola_id', movimiento.camisola_id)
                 .eq('talla', movimiento.talla)
                 .single();
 
             if (invFetchError && invFetchError.code !== 'PGRST116') throw invFetchError;
 
-            const currentCantidad = invData?.cantidad || 0;
-            const newCantidad = movimiento.tipo === 'entrada'
-                ? currentCantidad + movimiento.cantidad
-                : Math.max(0, currentCantidad - movimiento.cantidad);
+            // Calculate new values based on movement type
+            let updateData: any = { updated_at: new Date().toISOString() };
+            const currentStock = invData?.cantidad || 0;
+            const currentMuestras = invData?.muestras || 0;
+            const currentVendidas = invData?.vendidas || 0;
+
+            if (movimiento.tipo === 'entrada') {
+                updateData.cantidad = currentStock + movimiento.cantidad;
+            } else if (movimiento.tipo === 'salida') {
+                updateData.cantidad = Math.max(0, currentStock - movimiento.cantidad);
+            } else if (movimiento.tipo === 'a_muestra') {
+                if (currentStock < movimiento.cantidad) throw new Error('Stock insuficiente para mover a muestras');
+                updateData.cantidad = currentStock - movimiento.cantidad;
+                updateData.muestras = currentMuestras + movimiento.cantidad;
+            } else if (movimiento.tipo === 'venta') {
+                if (currentStock < movimiento.cantidad) throw new Error('Stock insuficiente para registrar venta');
+                updateData.cantidad = currentStock - movimiento.cantidad;
+                updateData.vendidas = currentVendidas + movimiento.cantidad;
+            }
 
             const { error: upsertError } = await supabase
                 .from('inventario')
                 .upsert({
                     camisola_id: movimiento.camisola_id,
                     talla: movimiento.talla,
-                    cantidad: newCantidad,
-                    updated_at: new Date().toISOString()
+                    ...updateData
                 }, { onConflict: 'camisola_id,talla' });
 
             if (upsertError) throw upsertError;

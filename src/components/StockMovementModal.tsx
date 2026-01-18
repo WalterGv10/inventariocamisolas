@@ -16,7 +16,7 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
 
     const [camisolaId, setCamisolaId] = useState('');
     const [talla, setTalla] = useState('');
-    const [tipo, setTipo] = useState<'entrada' | 'salida'>('entrada');
+    const [tipo, setTipo] = useState<'entrada' | 'salida' | 'a_muestra' | 'venta'>('entrada');
     const [cantidad, setCantidad] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,7 +113,7 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                     <div className={styles.formGroup}>
                         <label>Tipo de Movimiento *</label>
                         <div className={styles.radioGroup}>
-                            <label className={styles.radioLabel}>
+                            <label className={`${styles.radioCard} ${tipo === 'entrada' ? styles.active : ''}`}>
                                 <input
                                     type="radio"
                                     value="entrada"
@@ -121,9 +121,44 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                     onChange={() => setTipo('entrada')}
                                     disabled={isSubmitting}
                                 />
-                                Entrada (Agregar Stock)
+                                <span className={styles.radioIcon}>📥</span>
+                                <div>
+                                    <strong>Nueva Entrada</strong>
+                                    <small>Sumar al stock disponible</small>
+                                </div>
                             </label>
-                            <label className={styles.radioLabel}>
+
+                            <label className={`${styles.radioCard} ${tipo === 'a_muestra' ? styles.active : ''}`}>
+                                <input
+                                    type="radio"
+                                    value="a_muestra"
+                                    checked={tipo === 'a_muestra'}
+                                    onChange={() => setTipo('a_muestra')}
+                                    disabled={isSubmitting}
+                                />
+                                <span className={styles.radioIcon}>🔍</span>
+                                <div>
+                                    <strong>A Muestra</strong>
+                                    <small>Mover de stock a muestra</small>
+                                </div>
+                            </label>
+
+                            <label className={`${styles.radioCard} ${tipo === 'venta' ? styles.active : ''}`}>
+                                <input
+                                    type="radio"
+                                    value="venta"
+                                    checked={tipo === 'venta'}
+                                    onChange={() => setTipo('venta')}
+                                    disabled={isSubmitting}
+                                />
+                                <span className={styles.radioIcon}>💰</span>
+                                <div>
+                                    <strong>Venta</strong>
+                                    <small>Registrar venta (baja stock)</small>
+                                </div>
+                            </label>
+
+                            <label className={`${styles.radioCard} ${tipo === 'salida' ? styles.active : ''}`}>
                                 <input
                                     type="radio"
                                     value="salida"
@@ -131,7 +166,11 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                     onChange={() => setTipo('salida')}
                                     disabled={isSubmitting}
                                 />
-                                Salida (Quitar Stock)
+                                <span className={styles.radioIcon}>📤</span>
+                                <div>
+                                    <strong>Salida / Ajuste</strong>
+                                    <small>Baja stock por otros motivos</small>
+                                </div>
                             </label>
                         </div>
                     </div>

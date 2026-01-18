@@ -21,7 +21,7 @@ export interface MovimientoInventario {
     id?: number;
     camisola_id: string;
     talla: string;
-    tipo: 'entrada' | 'salida';
+    tipo: 'entrada' | 'salida' | 'a_muestra' | 'venta';
     cantidad: number;
     fecha: string;
     descripcion?: string;
