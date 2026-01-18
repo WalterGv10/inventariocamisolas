@@ -1,0 +1,254 @@
+.dashboardWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    /* Center children */
+}
+
+.tabSelector {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-card);
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    /* align-self: flex-start;  Removed to allow centering */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tabButton {
+    padding: 0.4rem 1rem;
+    /* Smaller button */
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Grids */
+.dashboardGrid {
+    display: grid;
+    /* Default for mobile/tablet */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+    /* Limit width ensuring compact 2-col look */
+}
+
+/* Force side-by-side on desktop to prevent scrolling */
+@media (min-width: 1024px) {
+    .dashboardGrid {
+        grid-template-columns: 1fr 1fr;
+        /* Strictly 2 columns */
+    }
+}
+
+/* Card Design - Professional & Clean */
+.teamCard {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teamCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: var(--text-secondary);
+}
+
+/* Card Top Border Indicators */
+.stockCard {
+    border-top: 3px solid var(--success);
+}
+
+.muestrasCard {
+    border-top: 3px solid var(--primary);
+}
+
+.vendidasCard {
+    border-top: 3px solid var(--warning);
+}
+
+.teamHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.teamTitle {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.teamTotalBadge {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-light);
+}
+
+.statsLayout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.sectionLabel {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+/* Sizes Row */
+.sizeRow {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sizeBox {
+    flex: 1;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.sizeBox.hasStock {
+    background: var(--bg-hover);
+    border-color: var(--text-secondary);
+}
+
+/* Stock styling - Subtle text color changes instead of neon */
+.stockCard .sizeBox.hasStock .value {
+    color: var(--success);
+}
+
+.muestrasCard .sizeBox.hasStock .value {
+    color: var(--primary);
+}
+
+.vendidasCard .sizeBox.hasStock .value {
+    color: var(--warning);
+}
+
+.label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.1rem;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Color Pills */
+.colorPillsSimple {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.colorPillMini {
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    display: flex;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    align-items: center;
+}
+
+.pillColorName {
+    color: var(--text-secondary);
+}
+
+.pillColorValue {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px dashed var(--border-light);
+    color: var(--text-secondary);
+}
+
+/* 384px Viewport Optimization */
+@media (max-width: 450px) {
+    .dashboardGrid {
+        grid-template-columns: 1fr;
+        /* Force single column */
+    }
+
+    .tabSelector {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        justify-content: space-between;
+        gap: 2px;
+        padding: 2px;
+    }
+
+    .tabButton {
+        flex: 1;
+        padding: 0.5rem 0.1rem;
+        font-size: 0.65rem;
+        text-align: center;
+        white-space: nowrap;
+        min-width: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+
+
+    /* Adjust badges/icons inside tabs if I had them, but here it's text */
+
+    .teamCard {
+        padding: 1rem;
+    }
+
+    .sizeRow {
+        gap: 0.25rem;
+    }
+
+    .sizeBox {
+        padding: 0.4rem 0.2rem;
+    }
+}

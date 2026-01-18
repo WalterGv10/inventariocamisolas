@@ -1,0 +1,197 @@
+/* Navigation.module.css */
+
+/* --- Top Navbar (Desktop) --- */
+.topNavbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 60px;
+    /* Fixed compact height */
+}
+
+.container {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo {
+    width: 28px;
+    /* Slightly smaller logo */
+    height: auto;
+}
+
+.titleWrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: 1rem;
+    /* Compact font */
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.desktopNav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.navButton {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navButton:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.navButton.active {
+    background: var(--bg-main);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.addButton {
+    margin-left: 1rem;
+    background: var(--primary);
+    color: white;
+}
+
+.addButton:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+/* --- Bottom Navbar (Mobile) --- */
+.bottomNavbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.mobileNavItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    flex: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobileNavItem svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+.mobileNavItem span {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.mobileNavItem.active {
+    color: var(--primary);
+}
+
+.mobileNavItem.active span {
+    font-weight: 700;
+}
+
+/* Central Floating Action Button (FAB) style for 'Add' */
+.fabItem {
+    transform: translateY(-20px);
+}
+
+.fabButton {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 4px solid var(--bg-main);
+    /* Matches body bg to look floating */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.fabButton:hover {
+    transform: scale(1.05);
+    background: var(--primary-dark);
+}
+
+.fabButton svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* Responsive Visibility */
+@media (max-width: 768px) {
+    .topNavbar {
+        display: none;
+        /* Hide full top navbar on mobile, or simplify it */
+    }
+}
+
+@media (min-width: 769px) {
+    .bottomNavbar {
+        display: none;
+    }
+}

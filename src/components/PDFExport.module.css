@@ -1,0 +1,36 @@
+.exportButton {
+    padding: 0.6rem 1.25rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.exportButton:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.exportButton:active {
+    transform: translateY(0);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .exportButton {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+}
