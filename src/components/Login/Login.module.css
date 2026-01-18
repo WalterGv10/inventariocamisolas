@@ -1,0 +1,185 @@
+.loginContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #030712;
+    background-image:
+        radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.45) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.2) 0%, transparent 50%);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.loginContainer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at 50% 50%, black, transparent 85%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.spotlight {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.loginCard {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    width: 100%;
+    max-width: 420px;
+    padding: 3rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 10;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.logoWrapper {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.logoIcon {
+    filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.logoIcon:hover {
+    transform: scale(1.05) rotate(2deg);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to bottom right, #fff, #9ca3af);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.welcomeWrapper {
+    min-height: 24px;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.socialLogin {
+    margin-top: 1rem;
+}
+
+.googleButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    background: #ffffff;
+    color: #0f172a;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.googleButton:hover {
+    background-color: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+}
+
+.googleButton:active {
+    transform: translateY(0);
+}
+
+.googleButton::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #3b82f6);
+    background-size: 200% 200%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+    animation: borderRotate 3s linear infinite;
+}
+
+.googleButton:hover::after {
+    opacity: 0.6;
+}
+
+@keyframes borderRotate {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.googleIcon {
+    width: 22px;
+    height: 22px;
+}
+
+.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(4px);
+}
+
+@media (max-width: 480px) {
+    .loginCard {
+        padding: 2rem;
+    }
+
+    .title {
+        font-size: 1.75rem;
+    }
+}

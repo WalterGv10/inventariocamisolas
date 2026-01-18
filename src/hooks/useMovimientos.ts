@@ -115,5 +115,27 @@ export function useMovimientos() {
         }
     };
 
-    return { createMovimiento, updateInventarioDirect, moveInventory, resetAllInventario };
+    const getRecentMovements = async (limit: number = 10) => {
+        try {
+            const { data, error } = await supabase
+                .from('movimientos_inventario')
+                .select(`
+                    *,
+                    camisolas (
+                        equipo,
+                        color
+                    )
+                `)
+                .order('fecha', { ascending: false })
+                .limit(limit);
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (err) {
+            console.error('Error fetching recent movements:', err);
+            return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+        }
+    };
+
+    return { createMovimiento, updateInventarioDirect, moveInventory, resetAllInventario, getRecentMovements };
 }

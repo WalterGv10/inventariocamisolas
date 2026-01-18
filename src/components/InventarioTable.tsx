@@ -5,9 +5,10 @@ import styles from './InventarioTable.module.css';
 interface InventarioTableProps {
     inventario: InventarioConDetalles[];
     loading: boolean;
+    isAdmin: boolean;
 }
 
-export function InventarioTable({ inventario, loading }: InventarioTableProps) {
+export function InventarioTable({ inventario, loading, isAdmin }: InventarioTableProps) {
     const { updateInventarioDirect, moveInventory } = useMovimientos();
 
     if (loading) {
@@ -19,11 +20,13 @@ export function InventarioTable({ inventario, loading }: InventarioTableProps) {
         );
     }
 
-    const handleUpdate = async (id: number, field: 'cantidad' | 'muestras' | 'vendidas', delta: number) => {
+    const handleUpdate = async (id: any, field: 'cantidad' | 'muestras' | 'vendidas', delta: number) => {
+        if (!isAdmin) return;
         await updateInventarioDirect(id, field, delta);
     };
 
-    const handleMove = async (id: number, from: 'cantidad' | 'muestras' | 'vendidas', to: 'cantidad' | 'muestras' | 'vendidas', amount: number) => {
+    const handleMove = async (id: any, from: 'cantidad' | 'muestras' | 'vendidas', to: 'cantidad' | 'muestras' | 'vendidas', amount: number) => {
+        if (!isAdmin) return;
         const result = await moveInventory(id, from, to, amount);
         if (!result.success) {
             alert(result.error);
@@ -60,30 +63,44 @@ export function InventarioTable({ inventario, loading }: InventarioTableProps) {
                                 <td className={styles.controlCell}>
                                     <div className={styles.hubWrapper}>
                                         <div className={styles.mainControls}>
-                                            <button onClick={() => handleUpdate(item.id, 'cantidad', -1)}>-</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'cantidad', -1)}>-</button>}
                                             <div className={styles.stockDisplay}>
                                                 <span className={styles.count}>{item.cantidad}</span>
                                             </div>
-                                            <button onClick={() => handleUpdate(item.id, 'cantidad', 1)}>+</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'cantidad', 1)}>+</button>}
                                         </div>
-                                        <div className={styles.transferActions}>
-                                            <button
-                                                className={styles.xferBtn}
-                                                onClick={() => handleMove(item.id, 'cantidad', 'muestras', 1)}
-                                                title="Mover 1 a Muestra"
-                                                disabled={item.cantidad <= 0}
-                                            >
-                                                Muestra →
-                                            </button>
-                                            <button
-                                                className={styles.xferBtn}
-                                                onClick={() => handleMove(item.id, 'cantidad', 'vendidas', 1)}
-                                                title="Mover 1 a Vendidas"
-                                                disabled={item.cantidad <= 0}
-                                            >
-                                                Vender →
-                                            </button>
-                                        </div>
+                                        {isAdmin && (
+                                            <div className={styles.transferActions}>
+                                                <button
+                                                    className={styles.xferBtn}
+                                                    onClick={() => handleMove(item.id, 'cantidad', 'muestras', 1)}
+                                                    title="Mover 1 a Muestra"
+                                                    disabled={item.cantidad <= 0}
+                                                >
+                                                    Muestra →
+                                                </button>
+                                                <button
+                                                    className={styles.xferBtn}
+                                                    onClick={() => handleMove(item.id, 'cantidad', 'vendidas', 1)}
+                                                    title="Mover 1 a Vendidas"
+                                                    disabled={item.cantidad <= 0}
+                                                >
+                                                    Vender →
+                                                </button>
+                                                <button
+                                                    className={`${styles.xferBtn} ${styles.discardBtn}`}
+                                                    onClick={() => {
+                                                        if (window.confirm('¿Descartar 1 unidad? (No se suma a ventas)')) {
+                                                            handleUpdate(item.id, 'cantidad', -1);
+                                                        }
+                                                    }}
+                                                    title="Descartar 1 (pérdida/daño)"
+                                                    disabled={item.cantidad <= 0}
+                                                >
+                                                    🗑️ Descartar
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
 
@@ -91,22 +108,24 @@ export function InventarioTable({ inventario, loading }: InventarioTableProps) {
                                 <td className={`${styles.controlCell} ${styles.muestraBg}`}>
                                     <div className={styles.hubWrapper}>
                                         <div className={styles.mainControls}>
-                                            <button onClick={() => handleUpdate(item.id, 'muestras', -1)}>-</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'muestras', -1)}>-</button>}
                                             <div className={`${styles.stockDisplay} ${styles.blueGlow}`}>
                                                 <span className={styles.count}>{item.muestras}</span>
                                             </div>
-                                            <button onClick={() => handleUpdate(item.id, 'muestras', 1)}>+</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'muestras', 1)}>+</button>}
                                         </div>
-                                        <div className={styles.transferActions}>
-                                            <button
-                                                className={styles.xferBtn}
-                                                onClick={() => handleMove(item.id, 'muestras', 'cantidad', 1)}
-                                                title="Regresar a Stock"
-                                                disabled={item.muestras <= 0}
-                                            >
-                                                ← Stock
-                                            </button>
-                                        </div>
+                                        {isAdmin && (
+                                            <div className={styles.transferActions}>
+                                                <button
+                                                    className={styles.xferBtn}
+                                                    onClick={() => handleMove(item.id, 'muestras', 'cantidad', 1)}
+                                                    title="Regresar a Stock"
+                                                    disabled={item.muestras <= 0}
+                                                >
+                                                    ← Stock
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
 
@@ -114,11 +133,11 @@ export function InventarioTable({ inventario, loading }: InventarioTableProps) {
                                 <td className={`${styles.controlCell} ${styles.ventaBg}`}>
                                     <div className={styles.hubWrapper}>
                                         <div className={styles.mainControls}>
-                                            <button onClick={() => handleUpdate(item.id, 'vendidas', -1)}>-</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'vendidas', -1)}>-</button>}
                                             <div className={`${styles.stockDisplay} ${styles.goldGlow}`}>
                                                 <span className={styles.count}>{item.vendidas}</span>
                                             </div>
-                                            <button onClick={() => handleUpdate(item.id, 'vendidas', 1)}>+</button>
+                                            {isAdmin && <button onClick={() => handleUpdate(item.id, 'vendidas', 1)}>+</button>}
                                         </div>
                                     </div>
                                 </td>

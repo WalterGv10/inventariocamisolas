@@ -24,7 +24,6 @@
 .table th {
     background: var(--bg-main);
     padding: 0.75rem;
-    /* Reduced padding */
     font-size: 0.7rem;
     font-weight: 600;
     color: var(--text-secondary);
@@ -32,7 +31,6 @@
     letter-spacing: 0.5px;
     border-bottom: 2px solid var(--border-light);
     position: sticky;
-    /* Sticky header */
     top: 0;
     z-index: 10;
 }
@@ -52,7 +50,6 @@
 
 .teamCell {
     padding: 0.75rem;
-    /* Compact padding */
     border-right: 1px solid var(--border-light);
 }
 
@@ -126,17 +123,12 @@
     min-width: 60px;
     height: 40px;
     background: var(--bg-main);
-    border: 2px solid var(--border-light);
+    border: 2px solid var(--success);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-}
-
-/* Dynamic Borders for Stock Types */
-.stockDisplay {
-    border-color: var(--success);
 }
 
 .blueGlow {
@@ -181,15 +173,25 @@
     cursor: not-allowed;
 }
 
+.discardBtn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.discardBtn:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+    border-color: #ef4444;
+}
+
 /* Background Hints for Columns */
 .muestraBg {
     background: rgba(59, 130, 246, 0.05);
-    /* Very subtle primary tint */
 }
 
 .ventaBg {
     background: rgba(245, 158, 11, 0.05);
-    /* Very subtle warning tint */
 }
 
 .loadingContainer {
@@ -220,7 +222,7 @@
     color: var(--text-secondary);
 }
 
-/* Mobile Optimizations */
+/* Tablet Optimizations */
 @media (max-width: 1024px) {
 
     .table th,
@@ -248,5 +250,126 @@
     .xferBtn {
         font-size: 0.6rem;
         padding: 0.2rem 0.4rem;
+    }
+}
+
+/* Mobile Card Layout for ~384px */
+@media (max-width: 500px) {
+    .tableContainer {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        max-height: none;
+    }
+
+    .tableScroll {
+        overflow: visible;
+    }
+
+    .table {
+        display: block;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .table tr {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .table tr:hover {
+        background: var(--bg-card);
+    }
+
+    .teamCell {
+        border-right: none;
+        padding: 0 0 0.5rem 0;
+        border-bottom: 1px solid var(--border-light);
+        max-width: none;
+    }
+
+    .teamName {
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .detailsCell {
+        padding: 0.5rem 0;
+    }
+
+    .detailsWrapper {
+        justify-content: flex-start;
+    }
+
+    .controlCell {
+        padding: 0.5rem 0;
+        border-top: 1px dashed var(--border-light);
+    }
+
+    .hubWrapper {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .mainControls {
+        gap: 0.3rem;
+    }
+
+    .mainControls button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+
+    .stockDisplay {
+        min-width: 40px;
+        height: 32px;
+    }
+
+    .count {
+        font-size: 0.95rem;
+    }
+
+    .transferActions {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .xferBtn {
+        font-size: 0.6rem;
+        padding: 0.25rem 0.4rem;
+    }
+
+    .discardBtn {
+        flex-basis: 100%;
+        text-align: center;
+        margin-top: 0.25rem;
+    }
+
+    .muestraBg,
+    .ventaBg {
+        background: transparent;
+    }
+
+    .emptyTable {
+        padding: 2rem 1rem;
     }
 }

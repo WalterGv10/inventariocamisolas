@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { supabase } from './lib/supabase';
+import { Login } from './components/Login/Login';
+import './App.css';
+
+import { useEffect, useState } from 'react';
 import { useInventario } from './hooks/useInventario';
 import { useCamisolas } from './hooks/useCamisolas';
 import { InventarioTable } from './components/InventarioTable';
@@ -8,13 +12,78 @@ import { Dashboard } from './components/Dashboard';
 import { TopNavbar } from './components/Navigation/TopNavbar';
 import { BottomNavbar } from './components/Navigation/BottomNavbar';
 import { useMovimientos } from './hooks/useMovimientos';
-import './App.css';
+import { TypingText } from './components/common/TypingText';
 
 function App() {
-    const { inventario, loading, error } = useInventario();
+    const [session, setSession] = useState<any>(null);
+    const [profile, setProfile] = useState<{ role: 'admin' | 'viewer' } | null>(null);
+    const [authLoading, setAuthLoading] = useState(true);
+
+    const { inventario, loading: invLoading, error } = useInventario();
     const { camisolas } = useCamisolas();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { resetAllInventario } = useMovimientos();
+    const { resetAllInventario, getRecentMovements } = useMovimientos();
+    const [movementTexts, setMovementTexts] = useState<string[]>([]);
+
+    useEffect(() => {
+        // 1. Initial Session Check
+        supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+            setSession(currentSession);
+            if (currentSession) fetchProfile(currentSession.user.id);
+            else setAuthLoading(false);
+        });
+
+        // 2. Listen for Auth Changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+            setSession(currentSession);
+            if (currentSession) fetchProfile(currentSession.user.id);
+            else {
+                setProfile(null);
+                setAuthLoading(false);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        const fetchMovements = async () => {
+            const { success, data } = await getRecentMovements(5);
+            if (success && data) {
+                const texts = data.map((m: any) => {
+                    const equipo = m.camisolas?.equipo || 'Camisola';
+                    const color = m.camisolas?.color || '';
+                    const tipoTexto = m.tipo === 'entrada' ? 'Ingresaron' : 'Salieron';
+                    return `${tipoTexto} ${m.cantidad} unidades de ${equipo} ${color} (Talla ${m.talla})`;
+                });
+                setMovementTexts(texts.length > 0 ? texts : ['No hay movimientos recientes']);
+            }
+        };
+
+        if (session) {
+            fetchMovements();
+        }
+    }, [session, isModalOpen]); // Reload when session starts or when a new movement is added (modal close)
+
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            if (data) setProfile(data);
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+    };
 
     const handleResetInventario = async () => {
         const confirmed = window.confirm(
@@ -48,6 +117,16 @@ function App() {
         );
     }
 
+    if (authLoading) {
+        return <div className="app-loading">Cargando acceso...</div>;
+    }
+
+    if (!session) {
+        return <Login />;
+    }
+
+    const isAdmin = profile?.role === 'admin';
+
     return (
         <div className="app">
             {/* Desktop Navigation */}
@@ -55,53 +134,42 @@ function App() {
                 currentView={view}
                 onViewChange={setView}
                 onAddClick={() => setIsModalOpen(true)}
+                isAdmin={isAdmin}
+                userEmail={session?.user?.email}
             />
 
             <main className="app-main" style={{ paddingBottom: '80px' }}> {/* Add padding for bottom nav */}
                 {view === 'dashboard' ? (
                     <>
                         <div className="actions-bar" style={{ marginTop: '1rem' }}>
-                            <div className="stats">
-                                <span className="stat-badge">
-                                    Modelos: <strong>{camisolas.length}</strong>
-                                </span>
-                                <span className="stat-badge">
-                                    Stock Total:{' '}
-                                    <strong>
-                                        {inventario.reduce((sum, item) => sum + item.cantidad, 0)}
-                                    </strong>
-                                </span>
-                                <span className="stat-badge blue">
-                                    Muestras:{' '}
-                                    <strong>
-                                        {inventario.reduce((sum, item) => sum + item.muestras, 0)}
-                                    </strong>
-                                </span>
-                                <span className="stat-badge gold">
-                                    Ventas:{' '}
-                                    <strong>
-                                        {inventario.reduce((sum, item) => sum + item.vendidas, 0)}
-                                    </strong>
-                                </span>
-                            </div>
+                            <TypingText texts={movementTexts} />
                         </div>
 
                         <Dashboard inventario={inventario} camisolas={camisolas} />
 
                         <div className="footer-actions" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                             <PDFExport inventario={inventario} />
-                            <button
-                                className="danger-button"
-                                onClick={handleResetInventario}
-                                title="Poner todo el inventario en 0"
-                            >
-                                🗑️ Reiniciar Todo
+                            {isAdmin && (
+                                <button
+                                    className="danger-button"
+                                    onClick={handleResetInventario}
+                                    title="Poner todo el inventario en 0"
+                                >
+                                    🗑️ Reiniciar Todo
+                                </button>
+                            )}
+                            <button className="secondary-button" onClick={handleLogout} style={{ opacity: 0.7 }}>
+                                Salir
                             </button>
                         </div>
                     </>
                 ) : (
                     <div style={{ marginTop: '1.5rem' }}>
-                        <InventarioTable inventario={inventario} loading={loading} />
+                        <InventarioTable
+                            inventario={inventario}
+                            loading={invLoading}
+                            isAdmin={isAdmin}
+                        />
                     </div>
                 )}
             </main>
@@ -111,9 +179,12 @@ function App() {
                 currentView={view}
                 onViewChange={setView}
                 onAddClick={() => setIsModalOpen(true)}
+                isAdmin={isAdmin}
             />
 
-            <StockMovementModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            {isAdmin && (
+                <StockMovementModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            )}
         </div>
     );
 }

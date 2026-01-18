@@ -252,3 +252,83 @@
         padding: 0.4rem 0.2rem;
     }
 }
+
+/* Detailed Model Breakdown */
+.modelList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: var(--bg-main);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+}
+
+.modelRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modelRow:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.modelInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modelName {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.modelTotal {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+}
+
+.modelSizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.miniSizeBadge {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.miniSizeBadge strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Highlight based on mode if needed, reusing stockCard/etc context */
+.stockCard .miniSizeBadge strong {
+    color: var(--success);
+}
+
+.muestrasCard .miniSizeBadge strong {
+    color: var(--primary);
+}
+
+.vendidasCard .miniSizeBadge strong {
+    color: var(--warning);
+}

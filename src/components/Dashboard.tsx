@@ -12,6 +12,11 @@ interface TeamStats {
     total: number;
     porTalla: Record<string, number>;
     porColor: Record<string, number>;
+    detallesPorModelo: Record<string, {
+        color: string;
+        total: number;
+        porTalla: Record<string, number>;
+    }>;
 }
 
 type DashboardMode = 'stock' | 'muestras' | 'vendidas';
@@ -30,11 +35,20 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                     total: 0,
                     porTalla: { S: 0, M: 0, L: 0, XL: 0 },
                     porColor: {},
+                    detallesPorModelo: {}
                 };
             }
-            // Ensure color key exists even with 0
+            // Ensure color key exists
             if (!stats[c.equipo].porColor[c.color]) {
                 stats[c.equipo].porColor[c.color] = 0;
+            }
+            // Initialize model details
+            if (!stats[c.equipo].detallesPorModelo[c.color]) {
+                stats[c.equipo].detallesPorModelo[c.color] = {
+                    color: c.color,
+                    total: 0,
+                    porTalla: { S: 0, M: 0, L: 0, XL: 0 }
+                };
             }
         });
 
@@ -47,6 +61,7 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                     total: 0,
                     porTalla: { S: 0, M: 0, L: 0, XL: 0 },
                     porColor: {},
+                    detallesPorModelo: {}
                 };
             }
 
@@ -61,6 +76,20 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
 
             if (item.color) {
                 team.porColor[item.color] = (team.porColor[item.color] || 0) + count;
+
+                // Update Detailed Model Stats
+                if (!team.detallesPorModelo[item.color]) {
+                    team.detallesPorModelo[item.color] = {
+                        color: item.color,
+                        total: 0,
+                        porTalla: { S: 0, M: 0, L: 0, XL: 0 }
+                    };
+                }
+                const modelStats = team.detallesPorModelo[item.color];
+                modelStats.total += count;
+                if (item.talla in modelStats.porTalla) {
+                    modelStats.porTalla[item.talla] += count;
+                }
             }
         });
 
@@ -109,16 +138,32 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                                 </div>
                             </div>
 
-                            {/* Colores */}
+                            {/* Detalles por Modelo */}
                             <div className={styles.section}>
-                                <span className={styles.sectionLabel}>Distribución por Color</span>
-                                <div className={styles.colorPillsSimple}>
-                                    {Object.entries(team.porColor).map(([color, cantidad]) => (
-                                        <div key={color} className={styles.colorPillMini}>
-                                            <span className={styles.pillColorName}>{color}:</span>
-                                            <span className={styles.pillColorValue}>{cantidad}</span>
-                                        </div>
-                                    ))}
+                                <span className={styles.sectionLabel}>Detalle por Modelo</span>
+                                <div className={styles.modelList}>
+                                    {Object.values(team.detallesPorModelo)
+                                        .sort((a, b) => b.total - a.total)
+                                        .map((model) => (
+                                            <div key={model.color} className={styles.modelRow}>
+                                                <div className={styles.modelInfo}>
+                                                    <span className={styles.modelName}>{model.color}</span>
+                                                    {model.total > 0 && <span className={styles.modelTotal}>{model.total}</span>}
+                                                </div>
+                                                <div className={styles.modelSizes}>
+                                                    {Object.entries(model.porTalla).map(([talla, cantidad]) => (
+                                                        (cantidad > 0 || model.total === 0) && ( // Show 0s if total is 0 to show availability of model? No, just show populated or all if preferred. Let's show only > 0 for cleanliness, or all if user wants detailed breakdown. User asked for "detail of how many of each size".
+                                                            cantidad > 0 ? (
+                                                                <span key={talla} className={styles.miniSizeBadge}>
+                                                                    {talla}: <strong>{cantidad}</strong>
+                                                                </span>
+                                                            ) : null
+                                                        )
+                                                    ))}
+                                                    {model.total === 0 && <span className={styles.miniSizeBadge} style={{ opacity: 0.5 }}>Sin stock</span>}
+                                                </div>
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
                         </div>
