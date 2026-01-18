@@ -1,0 +1,233 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: transparent;
+    width: 100%;
+    max-width: 1000px;
+    height: 90vh;
+    /* Taller on desktop */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    color: white;
+    z-index: 10;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.closeButton {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.mediaContainer {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #000;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.mainMedia {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Default to contain for perfect view */
+}
+
+/* For images that might look better covered if decoration */
+/* .coverMode { object-fit: cover; } */
+
+.thumbnailsContainer {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+    max-width: 100%;
+}
+
+.thumbnails {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(20, 20, 20, 0.8);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.thumbnails::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.thumbnail {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0.5;
+    transform: scale(0.9);
+}
+
+.thumbnail:hover {
+    opacity: 0.8;
+    transform: scale(1);
+}
+
+.thumbnail.active {
+    border-color: #00ff88;
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.videoThumbnail {
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.videoThumbnail span {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.active.videoThumbnail {
+    background: #111;
+    color: #00ff88;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .modal {
+        height: 100vh;
+        max-width: 100%;
+        border-radius: 0;
+    }
+
+    .mediaContainer {
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    .header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+        padding-top: max(1rem, env(safe-area-inset-top));
+        /* Handle notch */
+    }
+
+    .thumbnailsContainer {
+        position: absolute;
+        bottom: 2rem;
+        left: 0;
+        right: 0;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+    }
+
+    .thumbnails {
+        background: transparent;
+        border: none;
+        padding: 0 1rem;
+        backdrop-filter: none;
+    }
+}
+
+/* Short Desktop (Netbooks) */
+@media (min-width: 769px) and (max-height: 600px) {
+    .modal {
+        height: 96vh;
+    }
+
+    .header {
+        padding: 0.5rem 1rem;
+    }
+
+    .thumbnail {
+        width: 48px;
+        height: 48px;
+    }
+}

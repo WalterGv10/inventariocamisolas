@@ -12,8 +12,29 @@ import { Dashboard } from './components/Dashboard';
 import { TopNavbar } from './components/Navigation/TopNavbar';
 import { BottomNavbar } from './components/Navigation/BottomNavbar';
 import { useMovimientos } from './hooks/useMovimientos';
-import { TypingText } from './components/common/TypingText';
+import { InventoryAgent } from './components/InventoryAgent/InventoryAgent';
 
+/**
+ * Main Application Component.
+ * 
+ * Orchestrates:
+ * - User Authentication (Supabase Auth & Session management).
+ * - Global State (Inventory, Jerseys, Profile Role).
+ * - Routing/View Switching (Topic-based: Dashboard vs Inventory Table).
+ * - Layout Composition (TopNavbar, BottomNavbar, Main Content).
+ * - AI Agent Integration.
+ * 
+ * ---
+ * 
+ * Componente Principal de la Aplicación.
+ * 
+ * Orquestra:
+ * - Autenticación de Usuario (Supabase Auth y gestión de Sesión).
+ * - Estado Global (Inventario, Camisolas, Rol de Perfil).
+ * - Enrutamiento/Cambio de Vista (Basado en Tópicos: Tablero vs Tabla de Inventario).
+ * - Composición de Diseño (Barra Superior, Barra Inferior, Contenido Principal).
+ * - Integración del Agente AI.
+ */
 function App() {
     const [session, setSession] = useState<any>(null);
     const [profile, setProfile] = useState<{ role: 'admin' | 'viewer' } | null>(null);
@@ -141,9 +162,13 @@ function App() {
             <main className="app-main" style={{ paddingBottom: '80px' }}> {/* Add padding for bottom nav */}
                 {view === 'dashboard' ? (
                     <>
-                        <div className="actions-bar" style={{ marginTop: '1rem' }}>
-                            <TypingText texts={movementTexts} />
-                        </div>
+                        <InventoryAgent
+                            recentMovements={movementTexts}
+                            inventario={inventario}
+                            userEmail={session?.user?.email}
+                        />
+
+                        {/* Spacer for the agent when it's static/fixed?? No, it's fixed now so it floats over content. */}
 
                         <Dashboard inventario={inventario} camisolas={camisolas} />
 

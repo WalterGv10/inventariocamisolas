@@ -8,6 +8,23 @@ interface TopNavbarProps {
     userEmail?: string;
 }
 
+/**
+ * Top Navigation Bar.
+ * 
+ * Includes:
+ * - Brand Logo (SVG) and Title.
+ * - Desktop Navigation Links (Dashboard, Inventory, Entry).
+ * - User Profile Display (Email & Role Badge).
+ * 
+ * ---
+ * 
+ * Barra de Navegación Superior.
+ * 
+ * Incluye:
+ * - Logo de Marca (SVG) y Título.
+ * - Enlaces de Navegación de Escritorio (Tablero, Inventario, Entrada).
+ * - Visualización del Perfil de Usuario (Email y Insignia de Rol).
+ */
 export function TopNavbar({
     currentView,
     onViewChange,

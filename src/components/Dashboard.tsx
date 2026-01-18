@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { InventarioConDetalles, Camisola } from '../types';
 import styles from './Dashboard.module.css';
+import { MediaModal } from './MediaModal/MediaModal';
 
 interface DashboardProps {
     inventario: InventarioConDetalles[];
@@ -16,13 +17,51 @@ interface TeamStats {
         color: string;
         total: number;
         porTalla: Record<string, number>;
+        imageUrl?: string;
+        videoUrl?: string;
+        galleryUrls?: string[];
     }>;
 }
 
 type DashboardMode = 'stock' | 'muestras' | 'vendidas';
 
+const TEAM_LOGOS: Record<string, string> = {
+    'Barcelona': 'https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg',
+    'Real Madrid': 'https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg'
+};
+
+/**
+ * Dashboard Component.
+ * 
+ * Displays key inventory statistics and visual breakdowns by team and model.
+ * Features specialized tabs for:
+ * - Stock: Items currently available.
+ * - Samples: Items marked for display/marketing.
+ * - Sales: Items sold.
+ * 
+ * Includes interactive elements to view product details/media via `MediaModal`.
+ * 
+ * ---
+ * 
+ * Componente Tablero (Dashboard).
+ * 
+ * Muestra estadísticas clave del inventario y desgloses visuales por equipo y modelo.
+ * Cuenta con pestañas especializadas para:
+ * - Stock: Artículos disponibles actualmente.
+ * - Muestras: Artículos marcados para exhibición/marketing.
+ * - Ventas: Artículos vendidos.
+ * 
+ * Incluye elementos interactivos para ver detalles/multimedia del producto vía `MediaModal`.
+ */
 export function Dashboard({ inventario, camisolas }: DashboardProps) {
     const [mode, setMode] = useState<DashboardMode>('stock');
+    const [selectedMedia, setSelectedMedia] = useState<{
+        isOpen: boolean;
+        title: string;
+        imageUrl?: string;
+        videoUrl?: string;
+        galleryUrls?: string[];
+    }>({ isOpen: false, title: '' });
 
     const teamStats = useMemo(() => {
         const stats: Record<string, TeamStats> = {};
@@ -44,10 +83,20 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
             }
             // Initialize model details
             if (!stats[c.equipo].detallesPorModelo[c.color]) {
+                // Helper to get best image
+                let bestImage = c.image_url;
+                if (c.gallery_urls && c.gallery_urls.length > 0) {
+                    const oneImg = c.gallery_urls.find((u: string) => /\/1\.(jpeg|jpg|png|webp)(\?|$)/i.test(u));
+                    bestImage = oneImg || c.gallery_urls[0];
+                }
+
                 stats[c.equipo].detallesPorModelo[c.color] = {
                     color: c.color,
                     total: 0,
-                    porTalla: { S: 0, M: 0, L: 0, XL: 0 }
+                    porTalla: { S: 0, M: 0, L: 0, XL: 0 },
+                    imageUrl: bestImage,
+                    videoUrl: c.video_url,
+                    galleryUrls: c.gallery_urls
                 };
             }
         });
@@ -120,7 +169,12 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                 {teamStats.map((team) => (
                     <div key={team.equipo} className={`${styles.teamCard} ${styles[mode + 'Card']}`}>
                         <div className={styles.teamHeader}>
-                            <h3 className={styles.teamTitle}>{team.equipo}</h3>
+                            <div className={styles.teamTitleWrapper}>
+                                {TEAM_LOGOS[team.equipo] && (
+                                    <img src={TEAM_LOGOS[team.equipo]} alt={team.equipo} className={styles.teamLogo} />
+                                )}
+                                <h3 className={styles.teamTitle}>{team.equipo}</h3>
+                            </div>
                             <span className={styles.teamTotalBadge}>{team.total} <small>unid.</small></span>
                         </div>
 
@@ -145,14 +199,32 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                                     {Object.values(team.detallesPorModelo)
                                         .sort((a, b) => b.total - a.total)
                                         .map((model) => (
-                                            <div key={model.color} className={styles.modelRow}>
+                                            <div
+                                                key={model.color}
+                                                className={styles.modelRow}
+                                                onClick={() => setSelectedMedia({
+                                                    isOpen: true,
+                                                    title: `${team.equipo} - ${model.color}`,
+                                                    imageUrl: model.imageUrl,
+                                                    videoUrl: model.videoUrl,
+                                                    galleryUrls: model.galleryUrls
+                                                })}
+                                                style={{ cursor: 'pointer' }}
+                                            >
                                                 <div className={styles.modelInfo}>
-                                                    <span className={styles.modelName}>{model.color}</span>
+                                                    <div className={styles.modelNameWrapper}>
+                                                        {model.imageUrl && (
+                                                            <div className={styles.thumbnailWrapper}>
+                                                                <img src={model.imageUrl} alt={model.color} className={styles.avatar} />
+                                                            </div>
+                                                        )}
+                                                        <span className={styles.modelName}>{model.color}</span>
+                                                    </div>
                                                     {model.total > 0 && <span className={styles.modelTotal}>{model.total}</span>}
                                                 </div>
                                                 <div className={styles.modelSizes}>
                                                     {Object.entries(model.porTalla).map(([talla, cantidad]) => (
-                                                        (cantidad > 0 || model.total === 0) && ( // Show 0s if total is 0 to show availability of model? No, just show populated or all if preferred. Let's show only > 0 for cleanliness, or all if user wants detailed breakdown. User asked for "detail of how many of each size".
+                                                        (cantidad > 0 || model.total === 0) && (
                                                             cantidad > 0 ? (
                                                                 <span key={talla} className={styles.miniSizeBadge}>
                                                                     {talla}: <strong>{cantidad}</strong>
@@ -173,6 +245,15 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                     <div className={styles.emptyState}>No hay datos para mostrar en esta categoría</div>
                 )}
             </div>
+
+            <MediaModal
+                isOpen={selectedMedia.isOpen}
+                onClose={() => setSelectedMedia({ ...selectedMedia, isOpen: false })}
+                title={selectedMedia.title}
+                imageUrl={selectedMedia.imageUrl}
+                videoUrl={selectedMedia.videoUrl}
+                galleryUrls={selectedMedia.galleryUrls}
+            />
         </div>
     );
 }

@@ -10,6 +10,27 @@ interface TypingTextProps {
     variant?: 'default' | 'login';
 }
 
+/**
+ * Typing Text Logic/Effect Component.
+ * 
+ * Renders text with a typewriter animation effect.
+ * Features:
+ * - Configurable typing/deleting speeds.
+ * - Looping through an array of strings.
+ * - Optional prefix (e.g., "Historial: ").
+ * - Variants for different contexts (default vs login).
+ * 
+ * ---
+ * 
+ * Componente de Lógica/Efecto de Texto "Typing".
+ * 
+ * Renderiza texto con un efecto de animación de máquina de escribir.
+ * Características:
+ * - Velocidades de escritura/borrado configurables.
+ * - Bucle a través de un array de textos.
+ * - Prefijo opcional (ej. "Historial: ").
+ * - Variantes para contextos diferentes (default vs login).
+ */
 export const TypingText: React.FC<TypingTextProps> = ({
     texts,
     typingSpeed = 100,

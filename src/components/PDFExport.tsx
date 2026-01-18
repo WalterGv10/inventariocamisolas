@@ -7,6 +7,25 @@ interface PDFExportProps {
     inventario: InventarioConDetalles[];
 }
 
+/**
+ * PDF Export Component.
+ * 
+ * Generates a downloadable PDF report of the current inventory using `jspdf` and `jspdf-autotable`.
+ * The report includes:
+ * - Header with Title and Timestamp.
+ * - Data Table (Team, Color, Size, Stock, Samples, Sales).
+ * - Summary Totals at the bottom.
+ * 
+ * ---
+ * 
+ * Componente de Exportación PDF.
+ * 
+ * Genera un reporte PDF descargable del inventario actual usando `jspdf` y `jspdf-autotable`.
+ * El reporte incluye:
+ * - Encabezado con Título y Fecha/Hora.
+ * - Tabla de Datos (Equipo, Color, Talla, Stock, Muestras, Ventas).
+ * - Totales de Resumen al final.
+ */
 export function PDFExport({ inventario }: PDFExportProps) {
     const handleExportPDF = () => {
         const doc = new jsPDF();

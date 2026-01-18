@@ -89,6 +89,19 @@
     border-bottom: 1px solid var(--border-light);
 }
 
+.teamTitleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.teamLogo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
 .teamTitle {
     font-size: 1.1rem;
     color: var(--text-primary);
@@ -277,10 +290,37 @@
     padding-bottom: 0;
 }
 
-.modelInfo {
+.modelNameWrapper {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
+}
+
+.thumbnailWrapper {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+}
+
+.mediaIndicator {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: var(--bg-card);
+    font-size: 0.6rem;
+    padding: 1px 3px;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .modelName {

@@ -13,6 +13,27 @@ const WELCOME_MESSAGES = [
     'Stock Pro 2026 listo'
 ];
 
+/**
+ * Login Component.
+ * 
+ * Handles user authentication via Google OAuth (Supabase).
+ * Features:
+ * - Animated "Typing" welcome messages.
+ * - Branded SVG Logo.
+ * - Social Login Button (Google).
+ * - Error handling and loading states.
+ * 
+ * ---
+ * 
+ * Componente de Inicio de Sesión.
+ * 
+ * Maneja la autenticación de usuario vía Google OAuth (Supabase).
+ * Características:
+ * - Mensajes de bienvenida animados estilo "Typing".
+ * - Logo de Marca SVG.
+ * - Botón de Inicio de Sesión Social (Google).
+ * - Manejo de errores y estados de carga.
+ */
 export function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

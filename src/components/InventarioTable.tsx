@@ -1,6 +1,8 @@
 import type { InventarioConDetalles } from '../types';
 import { useMovimientos } from '../hooks/useMovimientos';
 import styles from './InventarioTable.module.css';
+import { useState } from 'react';
+import { MediaModal } from './MediaModal/MediaModal';
 
 interface InventarioTableProps {
     inventario: InventarioConDetalles[];
@@ -8,8 +10,34 @@ interface InventarioTableProps {
     isAdmin: boolean;
 }
 
+/**
+ * Table component to display and manage the main inventory.
+ * 
+ * Features:
+ * - Displays a list of products with their stock, samples, and sales counts.
+ * - Admin controls to update quantities (+/-) directly.
+ * - "Hub" actions to move items between categories (Stock -> Samples -> Sales).
+ * - Integration with MediaModal to preview product images/details.
+ * 
+ * ---
+ * 
+ * Componente de tabla para mostrar y gestionar el inventario principal.
+ * 
+ * Características:
+ * - Muestra una lista de productos con sus conteos de stock, muestras y ventas.
+ * - Controles de administrador para actualizar cantidades (+/-) directamente.
+ * - Acciones "Hub" para mover artículos entre categorías (Stock -> Muestras -> Ventas).
+ * - Integración con MediaModal para previsualizar imágenes/detalles del producto.
+ */
 export function InventarioTable({ inventario, loading, isAdmin }: InventarioTableProps) {
     const { updateInventarioDirect, moveInventory } = useMovimientos();
+    const [selectedMedia, setSelectedMedia] = useState<{
+        isOpen: boolean;
+        title: string;
+        imageUrl?: string;
+        videoUrl?: string;
+        galleryUrls?: string[];
+    }>({ isOpen: false, title: '' });
 
     if (loading) {
         return (
@@ -54,8 +82,32 @@ export function InventarioTable({ inventario, loading, isAdmin }: InventarioTabl
                                 </td>
                                 <td className={styles.detailsCell}>
                                     <div className={styles.detailsWrapper}>
-                                        <span className={styles.colorBadge}>{item.color}</span>
-                                        <span className={styles.tallaBadge}>{item.talla}</span>
+                                        {(() => {
+                                            const bestImage = item.gallery_urls?.find((u: string) => /\/1\.(jpeg|jpg|png|webp)(\?|$)/i.test(u))
+                                                || item.gallery_urls?.[0]
+                                                || item.image_url;
+
+                                            return (
+                                                <div
+                                                    className={styles.modelBrief}
+                                                    onClick={() => setSelectedMedia({
+                                                        isOpen: true,
+                                                        title: `${item.equipo} - ${item.color}`,
+                                                        imageUrl: bestImage,
+                                                        videoUrl: item.video_url,
+                                                        galleryUrls: item.gallery_urls
+                                                    })}
+                                                >
+                                                    {bestImage && (
+                                                        <img src={bestImage} alt={item.color} className={styles.tableThumb} />
+                                                    )}
+                                                    <div className={styles.badgesWrapper}>
+                                                        <span className={styles.colorBadge}>{item.color}</span>
+                                                        <span className={styles.tallaBadge}>{item.talla}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 </td>
 
@@ -151,6 +203,15 @@ export function InventarioTable({ inventario, loading, isAdmin }: InventarioTabl
                     <p>No se encontraron productos en el inventario.</p>
                 </div>
             )}
+
+            <MediaModal
+                isOpen={selectedMedia.isOpen}
+                onClose={() => setSelectedMedia({ ...selectedMedia, isOpen: false })}
+                title={selectedMedia.title}
+                imageUrl={selectedMedia.imageUrl}
+                videoUrl={selectedMedia.videoUrl}
+                galleryUrls={selectedMedia.galleryUrls}
+            />
         </div>
     );
 }

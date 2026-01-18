@@ -7,6 +7,23 @@ interface BottomNavbarProps {
     isAdmin: boolean;
 }
 
+/**
+ * Bottom Navigation Bar (Mobile Only).
+ * 
+ * Provides quick access to main views on small screens:
+ * - Summary/Dashboard Tab.
+ * - Floating Action Button (FAB) for adding entries (Admin only).
+ * - Inventory Tab.
+ * 
+ * ---
+ * 
+ * Barra de Navegación Inferior (Solo Móvil).
+ * 
+ * Proporciona acceso rápido a las vistas principales en pantallas pequeñas:
+ * - Pestaña Resumen/Tablero.
+ * - Botón de Acción Flotante (FAB) para agregar entradas (Solo Admin).
+ * - Pestaña Inventario.
+ */
 export function BottomNavbar({ currentView, onViewChange, onAddClick, isAdmin }: BottomNavbarProps) {
     return (
         <nav className={styles.bottomNavbar}>

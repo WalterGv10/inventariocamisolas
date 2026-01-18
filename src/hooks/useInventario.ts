@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { InventarioConDetalles } from '../types';
 
+/**
+ * Custom hook to fetch and subscribe to Inventory data.
+ * 
+ * - Fetches initial inventory state with joined product details (Camisolas).
+ * - Subscribes to real-time changes in the 'inventario' table via Supabase.
+ * - Provides refetch capability.
+ * 
+ * ---
+ * 
+ * Hook personalizado para obtener y suscribirse a datos de Inventario.
+ * 
+ * - Obtiene el estado inicial del inventario con detalles de producto unidos (Camisolas).
+ * - Se suscribe a cambios en tiempo real en la tabla 'inventario' vía Supabase.
+ * - Provee capacidad de recarga manual (refetch).
+ */
 export function useInventario() {
     const [inventario, setInventario] = useState<InventarioConDetalles[]>([]);
     const [loading, setLoading] = useState(true);

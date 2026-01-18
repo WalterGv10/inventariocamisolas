@@ -10,6 +10,25 @@ interface FiltersProps {
 
 const TALLAS = ['S', 'M', 'L', 'XL'];
 
+/**
+ * Filters Component.
+ * 
+ * UI for filtering inventory lists.
+ * Supports filtering by:
+ * - Team (dynamically populated).
+ * - Color (dynamically populated).
+ * - Size (Fixed list: S, M, L, XL).
+ * 
+ * ---
+ * 
+ * Componente de Filtros.
+ * 
+ * Interfaz de usuario para filtrar listas de inventario.
+ * Soporta filtrado por:
+ * - Equipo (poblado dinámicamente).
+ * - Color (poblado dinámicamente).
+ * - Talla (Lista fija: S, M, L, XL).
+ */
 export function Filters({
     filtros,
     onFiltrosChange,

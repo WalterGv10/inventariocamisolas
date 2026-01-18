@@ -1,6 +1,25 @@
 import { supabase } from '../lib/supabase';
 import type { MovimientoInventario } from '../types';
 
+/**
+ * Custom hook for Inventory Operations/Movements.
+ * 
+ * Provides methods for:
+ * - createMovimiento: Logs a movement and automatically updates inventory counts (Transactional-ish).
+ * - updateInventarioDirect: Direct +/- updates to inventory fields (Admin quick actions).
+ * - moveInventory: Transfers stock between categories (e.g., Stock to Samples).
+ * - resetAllInventario: DANGER. Resets all counts to zero.
+ * 
+ * ---
+ * 
+ * Hook personalizado para Operaciones/Movimientos de Inventario.
+ * 
+ * Provee métodos para:
+ * - createMovimiento: Registra un movimiento y actualiza automáticamente conteos (Transaccional).
+ * - updateInventarioDirect: Actualizaciones directas +/- a campos de inventario (Acciones rápidas de Admin).
+ * - moveInventory: Transfiere stock entre categorías (ej. Stock a Muestras).
+ * - resetAllInventario: PELIGRO. Reinicia todos los conteos a cero.
+ */
 export function useMovimientos() {
     const createMovimiento = async (movimiento: MovimientoInventario) => {
         try {
