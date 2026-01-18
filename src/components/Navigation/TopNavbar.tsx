@@ -19,7 +19,22 @@ export function TopNavbar({
         <nav className={styles.topNavbar}>
             <div className={styles.container}>
                 <div className={styles.brand}>
-                    <img src="/logo.png" alt="Logo" className={styles.logo} />
+                    {/* SVG Logo Icon (Shapes only) */}
+                    <svg className={styles.logo} viewBox="0 0 65 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20C10 14.4772 14.4772 10 20 10H30L25 30H15C12.2386 30 10 27.7614 10 25V20Z" fill="url(#navGrad1)" />
+                        <path d="M35 10H45C50.5228 10 55 14.4772 55 20V25C55 27.7614 52.7614 30 50 30H30L35 10Z" fill="url(#navGrad2)" />
+                        <rect x="18" y="18" width="24" height="4" rx="2" fill="white" opacity="0.6" />
+                        <defs>
+                            <linearGradient id="navGrad1" x1="10" y1="10" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#60A5FA" />
+                                <stop offset="1" stopColor="#3B82F6" />
+                            </linearGradient>
+                            <linearGradient id="navGrad2" x1="30" y1="10" x2="55" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#A78BFA" />
+                                <stop offset="1" stopColor="#8B5CF6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                     <div className={styles.titleWrapper}>
                         <h1 className={styles.title}>Inventario</h1>
                         <span className={styles.subtitle}>Panel de Control</span>

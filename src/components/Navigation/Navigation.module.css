@@ -32,9 +32,9 @@
 }
 
 .logo {
-    width: 28px;
-    /* Slightly smaller logo */
-    height: auto;
+    width: auto;
+    height: 36px;
+    /* Adjusted for SVG Logo */
 }
 
 .titleWrapper {
