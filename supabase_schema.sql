@@ -29,10 +29,12 @@ CREATE TABLE IF NOT EXISTS public.movimientos_inventario (
   id BIGSERIAL PRIMARY KEY,
   camisola_id TEXT NOT NULL REFERENCES public.camisolas(id) ON DELETE CASCADE,
   talla TEXT NOT NULL,
-  tipo TEXT NOT NULL CHECK (tipo IN ('entrada', 'salida')),
+  tipo TEXT NOT NULL CHECK (tipo IN ('entrada', 'salida', 'a_muestra', 'venta')),
   cantidad INTEGER NOT NULL CHECK (cantidad > 0),
   fecha DATE NOT NULL DEFAULT CURRENT_DATE,
   descripcion TEXT,
+  fecha_entrega DATE,
+  precio_venta NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
