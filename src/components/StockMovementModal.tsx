@@ -49,6 +49,7 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
     const [precioVenta, setPrecioVenta] = useState<string>('');
     const [fechaEntrega, setFechaEntrega] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     // Filtered Camisolas
     const displayCamisolas = camisolas;
@@ -148,7 +149,11 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
         setIsSubmitting(false);
 
         if (errorCount === 0) {
-            handleClose();
+            setIsSuccess(true);
+            setTimeout(() => {
+                handleClose();
+                setTimeout(() => setIsSuccess(false), 300); // Reset after close
+            }, 2000);
         } else {
             alert(`Error: ${lastError}${errorCount > 1 ? ` (y ${errorCount - 1} errores más)` : ''}`);
         }
@@ -183,6 +188,19 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
     return (
         <div className={styles.backdrop} onClick={handleClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+
+                {/* SUCCESS OVERLAY */}
+                {isSuccess && (
+                    <div className={styles.successOverlay}>
+                        <div className={styles.successContent}>
+                            <div className={styles.checkmarkCircle}>
+                                <span className={styles.checkmark}>✓</span>
+                            </div>
+                            <div className={styles.successTitle}>¡Movimiento Completado!</div>
+                            <div className={styles.successSubtitle}>El inventario ha sido actualizado correctamente.</div>
+                        </div>
+                    </div>
+                )}
 
                 {/* HEADER */}
                 <div className={styles.header}>
