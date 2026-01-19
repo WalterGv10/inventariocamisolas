@@ -818,6 +818,43 @@
     color: var(--primary);
 }
 
+/* Extra Inputs */
+.extraInputSection {
+    background: var(--bg-main);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.extraInputSection label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mainInput {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    width: 100%;
+    outline: none;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.mainInput:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .floatingFooter {

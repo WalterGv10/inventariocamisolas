@@ -2,10 +2,12 @@
 
 .agentContainer {
     position: fixed;
-    z-index: 1001;
-    /* Above Bottom Navbar */
+    z-index: 950;
+    /* Below Modal (1000) but above content */
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    bottom: 90px;
+    top: 75px;
+    /* Move to top on mobile */
+    bottom: auto;
     left: 50%;
     transform: translateX(-50%);
     width: auto;
