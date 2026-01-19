@@ -293,12 +293,12 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                         <span>Venta</span>
                                     </button>
                                     <button
-                                        className={`${styles.typeBtn} ${tipo === 'salida' ? styles.active : ''}`}
-                                        onClick={() => setTipo('salida')}
-                                        data-type="salida"
+                                        className={`${styles.typeBtn} ${tipo === 'a_muestra' ? styles.active : ''}`}
+                                        onClick={() => setTipo('a_muestra')}
+                                        data-type="a_muestra"
                                     >
-                                        <span className={styles.typeIcon}>📤</span>
-                                        <span>Salida</span>
+                                        <span className={styles.typeIcon}>👁️</span>
+                                        <span>En Muestra</span>
                                     </button>
                                 </div>
                             </div>
