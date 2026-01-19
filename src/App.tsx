@@ -78,6 +78,7 @@ function App() {
                     tipo: string;
                     modelo: string;
                     equipo: string;
+                    usuario: string; // Add usuario to type
                     tallas: Record<string, number>;
                 }> = {};
 
@@ -87,15 +88,17 @@ function App() {
                             m.tipo === 'venta' ? 'VENTA' : 'MOVIMIENTO';
                     const modelo = m.camisolas?.color || 'Modelo';
                     const equipo = m.camisolas?.equipo || '';
+                    const usuario = m.usuario ? m.usuario.split('@')[0].toUpperCase() : 'SISTEMA';
 
-                    // Key to group by: Type + Model Name
-                    const key = `${tipoKey}_${modelo}_${equipo}`;
+                    // Key to group by: Type + Model Name + User (so we don't merge different users' actions if they happen close)
+                    const key = `${tipoKey}_${modelo}_${equipo}_${usuario}`;
 
                     if (!groupedMap[key]) {
                         groupedMap[key] = {
                             tipo: tipoKey,
                             modelo: modelo.toUpperCase(),
                             equipo: equipo.toUpperCase(),
+                            usuario,
                             tallas: {}
                         };
                     }
@@ -107,7 +110,7 @@ function App() {
                     const tallasStr = Object.entries(g.tallas)
                         .map(([talla, qty]) => `${talla}(${qty})`)
                         .join(', ');
-                    return `${g.tipo}: ${g.modelo} (${g.equipo}) - [${tallasStr}]`;
+                    return `[${g.usuario}] ${g.tipo}: ${g.modelo} (${g.equipo}) - [${tallasStr}]`;
                 });
 
                 // Show only the last 2 distinct movements

@@ -152,7 +152,7 @@ const SingleRow = ({ m, isChild = false }: { m: any, isChild?: boolean }) => (
         <td style={{ whiteSpace: 'nowrap', color: '#94a3b8', fontSize: '0.75rem', paddingLeft: isChild ? '1rem' : 0 }}>
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{isChild ? '↳ ' : ''}{new Date(m.fecha).toLocaleString()}</span>
+                    <span>{isChild ? '↳ ' : ''}{new Date(m.created_at || m.fecha).toLocaleString()}</span>
                 </div>
                 <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px', fontStyle: 'italic' }}>
                     👤 {m.usuario ? m.usuario.split('@')[0] : 'Sistema / Antiguo'}
@@ -220,7 +220,7 @@ const BatchRow = ({ items }: { items: any[] }) => {
                         >
                             {expanded ? '[-]' : '[+]'}
                         </button>
-                        <span>{new Date(first.fecha).toLocaleDateString()}</span>
+                        <span>{new Date(first.created_at || first.fecha).toLocaleString()}</span>
                     </div>
                 </td>
                 <td>
