@@ -46,9 +46,6 @@ export const InventoryAgent: React.FC<InventoryAgentProps> = ({
     // History Marquee Content
     const displayUserName = userName || (userEmail ? userEmail.split('@')[0].split('.')[0] : 'Usuario');
     const greeting = `¡HOLA ${displayUserName.toUpperCase()}!`;
-    const marqueeText = recentMovements.length > 0
-        ? `${greeting}   •   ${recentMovements.join('   •   ')}   •   `
-        : `${greeting}   •   Cargando movimientos...`;
 
     // --- Interaction Handlers ---
 
@@ -117,9 +114,14 @@ export const InventoryAgent: React.FC<InventoryAgentProps> = ({
                 <div className={styles.interactionArea}>
                     <div className={styles.textDisplay}>
                         {mode === 'history' ? (
-                            <div className={styles.marqueeContainer}>
-                                <div className={styles.marqueeText}>
-                                    {marqueeText}
+                            <div className={styles.doubleLineContainer}>
+                                <div className={styles.staticLine}>
+                                    <span className={styles.promptIcon}>👋</span> {greeting}
+                                </div>
+                                <div className={styles.marqueeContainer}>
+                                    <div className={styles.marqueeText}>
+                                        {recentMovements.length > 0 ? recentMovements.join('   •   ') : 'Esperando movimientos...'}
+                                    </div>
                                 </div>
                             </div>
                         ) : (
