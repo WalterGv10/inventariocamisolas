@@ -71,7 +71,7 @@ function App() {
 
     useEffect(() => {
         const fetchMovements = async () => {
-            const { success, data } = await getRecentMovements(10); // Fetch more to allow grouping
+            const { success, data } = await getRecentMovements(50); // Fetch more to allow grouping
             if (success && data) {
                 // Grouping by type + model (color) + date (to group batches)
                 const groupedMap: Record<string, {

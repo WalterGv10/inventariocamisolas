@@ -216,7 +216,7 @@ export function useMovimientos() {
                         color
                     )
                 `)
-                .order('fecha', { ascending: false })
+                .order('created_at', { ascending: false })
                 .limit(limit);
 
             if (error) throw error;
