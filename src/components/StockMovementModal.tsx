@@ -46,6 +46,8 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
     const [batchData, setBatchData] = useState<Record<string, Record<string, number>>>({});
 
     const [tipo, setTipo] = useState<MovementType>('entrada');
+    const [precioVenta, setPrecioVenta] = useState<string>('');
+    const [fechaEntrega, setFechaEntrega] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Filtered Camisolas
@@ -117,7 +119,9 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                         tipo,
                         cantidad: qty,
                         fecha: new Date().toISOString().split('T')[0],
-                        descripcion: `Mov. Lote: ${tipo}`
+                        descripcion: `Mov. Lote: ${tipo}`,
+                        precio_venta: tipo === 'venta' && precioVenta ? parseFloat(precioVenta) : undefined,
+                        fecha_entrega: tipo === 'a_muestra' && fechaEntrega ? fechaEntrega : undefined
                     });
                 }
             });
@@ -131,10 +135,14 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
         setIsSubmitting(true);
 
         // Execute sequentially
+        let lastError = '';
         let errorCount = 0;
         for (const move of moves) {
             const result = await createMovimiento(move);
-            if (!result.success) errorCount++;
+            if (!result.success) {
+                errorCount++;
+                lastError = result.error || 'Error desconocido';
+            }
         }
 
         setIsSubmitting(false);
@@ -142,7 +150,7 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
         if (errorCount === 0) {
             handleClose();
         } else {
-            alert(`Hubo errores al guardar ${errorCount} movimientos. Revisa la conexión.`);
+            alert(`Error: ${lastError}${errorCount > 1 ? ` (y ${errorCount - 1} errores más)` : ''}`);
         }
     };
 
@@ -152,6 +160,8 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
             setSelectedIds([]);
             setBatchData({});
             setTipo('entrada');
+            setPrecioVenta('');
+            setFechaEntrega('');
             onClose();
         }
     };
@@ -274,6 +284,32 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Conditional Inputs based on Type */}
+                            {tipo === 'venta' && (
+                                <div className={styles.extraInputSection}>
+                                    <label>Precio Total Venta (Q)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ej. 150.00"
+                                        value={precioVenta}
+                                        onChange={e => setPrecioVenta(e.target.value)}
+                                        className={styles.mainInput}
+                                    />
+                                </div>
+                            )}
+
+                            {tipo === 'a_muestra' && (
+                                <div className={styles.extraInputSection}>
+                                    <label>Fecha de Entrega / Devolución</label>
+                                    <input
+                                        type="date"
+                                        value={fechaEntrega}
+                                        onChange={e => setFechaEntrega(e.target.value)}
+                                        className={styles.mainInput}
+                                    />
+                                </div>
+                            )}
 
                             {/* Scrollable Product List */}
                             <div className={styles.batchList}>

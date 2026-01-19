@@ -55,6 +55,9 @@ export interface MovimientoInventario {
     cantidad: number;
     fecha: string;
     descripcion?: string;
+    precio_venta?: number;
+    fecha_entrega?: string;
+    usuario?: string;
     created_at?: string;
 }
 

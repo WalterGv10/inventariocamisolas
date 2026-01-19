@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useInventoryAI } from '../../hooks/useInventoryAI';
 import type { InventarioConDetalles } from '../../types';
 import styles from './InventoryAgent.module.css';
@@ -7,6 +7,7 @@ interface InventoryAgentProps {
     recentMovements: string[];
     inventario: InventarioConDetalles[];
     userEmail?: string;
+    userName?: string;
 }
 
 /**
@@ -31,127 +32,121 @@ interface InventoryAgentProps {
 export const InventoryAgent: React.FC<InventoryAgentProps> = ({
     recentMovements,
     inventario,
-    userEmail
+    userEmail,
+    userName
 }) => {
     // Hook that contains the NLP logic
     const { processQuery } = useInventoryAI();
     const [mode, setMode] = useState<'history' | 'chat'>('history');
+    const [isExpanded, setIsExpanded] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [displayText, setDisplayText] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    // History Animation State
-    const [historyIndex, setHistoryIndex] = useState(0);
-    const typingTimeoutRef = useRef<number | null>(null);
+    // History Marquee Content
+    const displayUserName = userName || (userEmail ? userEmail.split('@')[0].split('.')[0] : 'Usuario');
+    const greeting = `¡HOLA ${displayUserName.toUpperCase()}!`;
+    const marqueeText = recentMovements.length > 0
+        ? `${greeting}   •   ${recentMovements.join('   •   ')}   •   `
+        : `${greeting}   •   Cargando movimientos...`;
 
-    // --- History Mode Animation ---
-    useEffect(() => {
-        if (mode === 'chat' || recentMovements.length === 0) return;
+    // --- Interaction Handlers ---
 
-        const currentMsg = recentMovements[historyIndex];
-        let charIndex = 0;
-        let isDeleting = false;
-
-        const type = () => {
-            // mode is captured in closure, so it won't change here if dependencies are right.
-            // But effect cleanup handles stopping.
-
-            const currentLength = isDeleting ? charIndex-- : charIndex++;
-            setDisplayText(currentMsg.substring(0, currentLength));
-
-            let speed = isDeleting ? 30 : 60;
-
-            if (!isDeleting && charIndex === currentMsg.length + 1) {
-                isDeleting = true;
-                speed = 2000; // Pause at end
-            } else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                setHistoryIndex((prev) => (prev + 1) % recentMovements.length);
-                speed = 500;
-            }
-
-            typingTimeoutRef.current = setTimeout(type, speed) as unknown as number;
-        };
-
-        type();
-
-        return () => {
-            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-        };
-    }, [mode, historyIndex, recentMovements]);
-
-    // --- Chat Logic ---
-    const handleInputFocus = () => {
-        setMode('chat');
-        setDisplayText('');
-        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    const handleContainerClick = () => {
+        if (!isExpanded) {
+            setIsExpanded(true);
+            setMode('chat');
+            setDisplayText(''); // Clear history text to show input
+            setTimeout(() => inputRef.current?.focus(), 100);
+        }
     };
 
-    const handleInputBlur = () => {
+    const handleCollapse = () => {
+        // Only collapse if clicking outside or explicitly blurring without value
         if (inputValue.trim() === '') {
+            setIsExpanded(false);
             setMode('history');
+            setDisplayText(''); // Will resume history loop
         }
     };
 
     const handleKeyDown = async (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && inputValue.trim()) {
-            setIsTyping(true);
-            setDisplayText("Analizando...");
-
-            // Use the current input value
             const query = inputValue;
-
-            // Artificial delay removed or minimal, waiting for real async process
             try {
                 const result = await processQuery(query, inventario, userEmail);
                 setDisplayText(result.answer);
             } catch (err) {
                 setDisplayText("Error procesando solicitud.");
-            } finally {
-                setIsTyping(false);
             }
 
             setInputValue('');
+        } else if (e.key === 'Escape') {
+            setIsExpanded(false);
+            setMode('history');
         }
     };
 
     return (
         <div className={styles.agentContainer}>
-            <div className={styles.terminalWindow}>
-                <div className={styles.statusLine}>
-                    <span className={styles.prompt}>
-                        {mode === 'history' ? 'HISTORIAL' : 'AI_AGENT'}
-                        <span className={styles.blink}>_</span>
-                    </span>
-                </div>
+            <div
+                className={`${styles.terminalWindow} ${isExpanded ? styles.expanded : ''}`}
+                onClick={handleContainerClick}
+            >
+                {(isExpanded || mode === 'chat') && (
+                    <div className={styles.statusLine}>
+                        <span className={styles.prompt}>
+                            <span className={styles.promptIcon}>{isExpanded ? '💬' : '🤖'}</span>
+                            {isExpanded ? 'Asistente' : 'IA_Agent'}
+                        </span>
+                        {isExpanded && (
+                            <span
+                                style={{ marginLeft: 'auto', cursor: 'pointer', opacity: 0.5, fontSize: '0.8rem' }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsExpanded(false);
+                                    setMode('history');
+                                }}
+                            >
+                                ✕
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 <div className={styles.interactionArea}>
                     <div className={styles.textDisplay}>
-                        {mode === 'history' && <span className={styles.prefix}>{"> "}</span>}
-
-                        <span className={isTyping ? styles.typing : styles.output}>
-                            {/* In chat mode, show input if no system message is displaying */}
-                            {mode === 'chat' && !displayText ? inputValue : displayText}
-                        </span>
-
-                        {mode === 'chat' && !displayText && (
-                            <span className={styles.blink}>_</span>
-                        )}
-
-                        {mode === 'chat' && !displayText && inputValue === '' && (
-                            <span className={styles.placeholder}> Pregúntame sobre el inventario...</span>
+                        {mode === 'history' ? (
+                            <div className={styles.marqueeContainer}>
+                                <div className={styles.marqueeText}>
+                                    {marqueeText}
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <span className={styles.prefix}>{"> "}</span>
+                                <span className={styles.output}>
+                                    {displayText || (inputValue || '')}
+                                </span>
+                                {!displayText && (
+                                    <span className={styles.blink}>|</span>
+                                )}
+                                {!displayText && inputValue === '' && (
+                                    <span className={styles.placeholder}> Pregunta sobre stock...</span>
+                                )}
+                            </>
                         )}
                     </div>
 
                     <input
+                        ref={inputRef}
                         type="text"
                         className={styles.hiddenInput}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        onFocus={handleInputFocus}
-                        onBlur={handleInputBlur}
+                        onBlur={handleCollapse}
                         onKeyDown={handleKeyDown}
-                        placeholder="Escribe aquí..."
+                        disabled={!isExpanded}
                     />
                 </div>
             </div>

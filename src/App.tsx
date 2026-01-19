@@ -13,6 +13,7 @@ import { TopNavbar } from './components/Navigation/TopNavbar';
 import { BottomNavbar } from './components/Navigation/BottomNavbar';
 import { useMovimientos } from './hooks/useMovimientos';
 import { InventoryAgent } from './components/InventoryAgent/InventoryAgent';
+import { HistoryModal } from './components/HistoryModal/HistoryModal';
 
 /**
  * Main Application Component.
@@ -43,6 +44,7 @@ function App() {
     const { inventario, loading: invLoading, error } = useInventario();
     const { camisolas } = useCamisolas();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const { resetAllInventario, getRecentMovements } = useMovimientos();
     const [movementTexts, setMovementTexts] = useState<string[]>([]);
 
@@ -69,22 +71,54 @@ function App() {
 
     useEffect(() => {
         const fetchMovements = async () => {
-            const { success, data } = await getRecentMovements(5);
+            const { success, data } = await getRecentMovements(10); // Fetch more to allow grouping
             if (success && data) {
-                const texts = data.map((m: any) => {
-                    const equipo = m.camisolas?.equipo || 'Camisola';
-                    const color = m.camisolas?.color || '';
-                    const tipoTexto = m.tipo === 'entrada' ? 'Ingresaron' : 'Salieron';
-                    return `${tipoTexto} ${m.cantidad} unidades de ${equipo} ${color} (Talla ${m.talla})`;
+                // Grouping by type + model (color) + date (to group batches)
+                const groupedMap: Record<string, {
+                    tipo: string;
+                    modelo: string;
+                    equipo: string;
+                    tallas: Record<string, number>;
+                }> = {};
+
+                data.forEach((m: any) => {
+                    const tipoKey = m.tipo === 'entrada' ? 'INGRESO' :
+                        m.tipo === 'salida' ? 'EGRESO' :
+                            m.tipo === 'venta' ? 'VENTA' : 'MOVIMIENTO';
+                    const modelo = m.camisolas?.color || 'Modelo';
+                    const equipo = m.camisolas?.equipo || '';
+
+                    // Key to group by: Type + Model Name
+                    const key = `${tipoKey}_${modelo}_${equipo}`;
+
+                    if (!groupedMap[key]) {
+                        groupedMap[key] = {
+                            tipo: tipoKey,
+                            modelo: modelo.toUpperCase(),
+                            equipo: equipo.toUpperCase(),
+                            tallas: {}
+                        };
+                    }
+
+                    groupedMap[key].tallas[m.talla] = (groupedMap[key].tallas[m.talla] || 0) + m.cantidad;
                 });
-                setMovementTexts(texts.length > 0 ? texts : ['No hay movimientos recientes']);
+
+                const texts = Object.values(groupedMap).map(g => {
+                    const tallasStr = Object.entries(g.tallas)
+                        .map(([talla, qty]) => `${talla}(${qty})`)
+                        .join(', ');
+                    return `${g.tipo}: ${g.modelo} (${g.equipo}) - [${tallasStr}]`;
+                });
+
+                // Show only the last 2 distinct movements
+                setMovementTexts(texts.length > 0 ? texts.slice(0, 2) : ['SIN MOVIMIENTOS RECIENTES']);
             }
         };
 
         if (session) {
             fetchMovements();
         }
-    }, [session, isModalOpen]); // Reload when session starts or when a new movement is added (modal close)
+    }, [session, isModalOpen]);
 
     const fetchProfile = async (userId: string) => {
         try {
@@ -112,7 +146,8 @@ function App() {
         );
 
         if (confirmed) {
-            const result = await resetAllInventario();
+            if (!session?.user?.email) return;
+            const result = await resetAllInventario(session.user.email);
             if (result.success) {
                 window.location.reload();
             } else {
@@ -166,6 +201,7 @@ function App() {
                             recentMovements={movementTexts}
                             inventario={inventario}
                             userEmail={session?.user?.email}
+                            userName={session?.user?.user_metadata?.full_name}
                         />
 
                         {/* Spacer for the agent when it's static/fixed?? No, it's fixed now so it floats over content. */}
@@ -175,13 +211,22 @@ function App() {
                         <div className="footer-actions" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                             <PDFExport inventario={inventario} />
                             {isAdmin && (
-                                <button
-                                    className="danger-button"
-                                    onClick={handleResetInventario}
-                                    title="Poner todo el inventario en 0"
-                                >
-                                    🗑️ Reiniciar Todo
-                                </button>
+                                <>
+                                    <button
+                                        className="secondary-button"
+                                        onClick={() => setIsHistoryOpen(true)}
+                                        title="Ver registro de movimientos"
+                                    >
+                                        📜 Ver Historial
+                                    </button>
+                                    <button
+                                        className="danger-button"
+                                        onClick={handleResetInventario}
+                                        title="Poner todo el inventario en 0"
+                                    >
+                                        🗑️ Reiniciar Todo
+                                    </button>
+                                </>
                             )}
                             <button className="secondary-button" onClick={handleLogout} style={{ opacity: 0.7 }}>
                                 Salir
@@ -208,7 +253,10 @@ function App() {
             />
 
             {isAdmin && (
-                <StockMovementModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+                <>
+                    <StockMovementModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+                    <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
+                </>
             )}
         </div>
     );
