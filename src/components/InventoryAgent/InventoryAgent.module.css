@@ -1,29 +1,27 @@
 /* InventoryAgent.module.css - Consolidated LED & Agent Styles */
 
 .agentContainer {
-    position: fixed;
+    position: relative;
     z-index: 950;
-    /* Below Modal (1000) but above content */
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    top: 75px;
-    /* Move to top on mobile */
-    bottom: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    width: auto;
-    max-width: 90vw;
+    margin: 0.5rem auto 1.5rem auto;
+    /* Spacing for flow */
+    width: 95%;
+    max-width: 600px;
     display: flex;
     justify-content: center;
     pointer-events: none;
+    /* Child enables pointer-events */
 }
 
 @media (min-width: 1024px) {
     .agentContainer {
+        position: fixed;
         top: auto;
-        /* Reset top for desktop */
         bottom: 2rem;
         right: 2rem;
         left: auto;
+        margin: 0;
         transform: none;
         width: 350px;
     }
