@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public.movimientos_inventario (
   descripcion TEXT,
   fecha_entrega DATE,
   precio_venta NUMERIC,
+  usuario TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
