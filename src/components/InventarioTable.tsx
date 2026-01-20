@@ -2,6 +2,7 @@ import type { InventarioConDetalles } from '../types';
 import { useMovimientos } from '../hooks/useMovimientos';
 import styles from './InventarioTable.module.css';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { MediaModal } from './MediaModal/MediaModal';
 
 interface InventarioTableProps {
@@ -57,7 +58,9 @@ export function InventarioTable({ inventario, loading, isAdmin }: InventarioTabl
         if (!isAdmin) return;
         const result = await moveInventory(id, from, to, amount);
         if (!result.success) {
-            alert(result.error);
+            toast.error('Operación fallida: ' + result.error);
+        } else {
+            toast.success('Movimiento realizado');
         }
     };
 

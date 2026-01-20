@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMovimientos } from '../../hooks/useMovimientos';
-import { supabase } from '../../lib/supabase'; // Import supabase
+import { supabase } from '../../lib/supabase';
+import { toast } from 'sonner';
 import styles from './HistoryModal.module.css';
 
 interface HistoryModalProps {
@@ -21,7 +22,6 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
 
     const loadHistory = async () => {
         setLoading(true);
-        // Fetch last 100 movements for the log view
         const { success, data } = await getRecentMovements(100);
         if (success && data) {
             setMovements(data);
@@ -40,12 +40,13 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
         if (user && user.email) {
             const result = await clearAllMovements(user.email);
             if (result.success) {
-                setMovements([]); // Clear local state
+                setMovements([]);
+                toast.success('Historial borrado correctamente');
             } else {
-                alert('Error: ' + result.error);
+                toast.error('Error: ' + result.error);
             }
         } else {
-            alert('Error: No se pudo identificar al usuario.');
+            toast.error('Error: No se pudo identificar al usuario.');
         }
         setLoading(false);
     };
@@ -58,13 +59,13 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                 <div className={styles.header}>
                     <div className={styles.title}>
                         📜 Registro de Movimientos
-                        {loading && <span style={{ fontSize: '0.8rem', opacity: 0.7, marginLeft: '1rem' }}>Cargando...</span>}
+                        {loading && <span style={{ fontSize: '0.8rem', opacity: 0.5, marginLeft: '1rem' }}>Sincronizando...</span>}
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                         <button
                             onClick={handleClearHistory}
                             className={styles.closeButton}
-                            style={{ color: '#f87171', fontSize: '1rem', border: '1px solid #ef4444', height: '32px', display: 'flex', alignItems: 'center', padding: '0 10px', borderRadius: '6px' }}
+                            style={{ width: 'auto', padding: '0 1rem', fontSize: '0.85rem' }}
                             title="Borrar Todo el Historial"
                         >
                             🗑️ Limpiar
@@ -77,17 +78,15 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                     <table className={styles.tableContainer}>
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Detalle</th>
+                                <th>Fecha y Usuario</th>
+                                <th>Operación</th>
+                                <th>Artículo</th>
                                 <th>Cantidad</th>
-                                <th>Notas</th>
+                                <th>Detalles / Notas</th>
                             </tr>
                         </thead>
                         <tbody>
                             {(() => {
-                                // 1. Group movements by batch logic
-                                // Logic: Group by exact date/time (or created_at) AND description being 'Mov. Lote: ...'
                                 const groupedMovements: any[] = [];
                                 let currentBatch: any[] = [];
 
@@ -95,14 +94,10 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                                     const prev = movements[index - 1];
                                     const isBatch = m.descripcion && m.descripcion.startsWith('Mov. Lote:');
 
-                                    // Check if current matches previous to continue batch
-                                    // Using created_at or just proximity in the list since we fetch ordered
-                                    // If exact timestamp match is too strict, we can rely on order + description + type
                                     const isSameBatch = prev &&
                                         prev.descripcion === m.descripcion &&
                                         prev.tipo === m.tipo &&
                                         prev.fecha === m.fecha &&
-                                        // Fallback for created_at if available to be precise, otherwise just grouping sequential same-type logs
                                         (Math.abs(new Date(prev.created_at || '').getTime() - new Date(m.created_at || '').getTime()) < 2000);
 
                                     if (isBatch) {
@@ -122,7 +117,6 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                                         groupedMovements.push(m);
                                     }
                                 });
-                                // Push remaining
                                 if (currentBatch.length > 0) groupedMovements.push({ isGroup: true, items: currentBatch });
 
                                 return groupedMovements.map((item, idx) => {
@@ -134,8 +128,11 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                             })()}
                             {movements.length === 0 && !loading && (
                                 <tr>
-                                    <td colSpan={5} className={styles.emptyState}>
-                                        No hay movimientos registrados.
+                                    <td colSpan={5}>
+                                        <div className={styles.emptyState}>
+                                            <div className={styles.emptyIcon}>📂</div>
+                                            No hay movimientos registrados.
+                                        </div>
                                     </td>
                                 </tr>
                             )}
@@ -148,18 +145,18 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
 };
 
 const SingleRow = ({ m, isChild = false }: { m: any, isChild?: boolean }) => (
-    <tr style={isChild ? { background: '#1e293b50', marginTop: 0, borderRadius: 0, borderTop: 'none' } : {}}>
-        <td style={{ whiteSpace: 'nowrap', color: '#94a3b8', fontSize: '0.75rem', paddingLeft: isChild ? '1rem' : 0 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{isChild ? '↳ ' : ''}{new Date(m.created_at || m.fecha).toLocaleString()}</span>
-                </div>
-                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px', fontStyle: 'italic' }}>
-                    👤 {m.usuario ? m.usuario.split('@')[0] : 'Sistema / Antiguo'}
-                </div>
+    <tr className={isChild ? styles.childRow : ''}>
+        <td data-label="Fecha/Usuario">
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.8rem', color: isChild ? '#64748b' : '#94a3b8' }}>
+                    {isChild ? '↳ ' : ''}{new Date(m.created_at || m.fecha).toLocaleString()}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>
+                    👤 {m.usuario ? m.usuario.split('@')[0] : 'Sistema'}
+                </span>
             </div>
         </td>
-        <td>
+        <td data-label="Operación">
             <span className={`${styles.badge} ${styles[m.tipo]}`}>
                 {m.tipo === 'entrada' ? 'INGRESO' :
                     m.tipo === 'salida' ? 'EGRESO' :
@@ -167,36 +164,35 @@ const SingleRow = ({ m, isChild = false }: { m: any, isChild?: boolean }) => (
                             m.tipo === 'a_muestra' ? 'MUESTRA' : m.tipo.toUpperCase()}
             </span>
         </td>
-        <td>
-            <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <td data-label="Artículo">
+            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
                 {m.camisolas?.equipo}
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
-                {m.camisolas?.color}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                Talla: <strong>{m.talla}</strong>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                {m.camisolas?.color} • Talla: <strong>{m.talla}</strong>
             </div>
         </td>
-        <td>
+        <td data-label="Cantidad">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                <span style={{ fontWeight: 700, fontSize: '1rem' }}>
                     {m.cantidad} un.
                 </span>
                 {m.precio_venta && (
-                    <span style={{ fontSize: '0.85rem', color: '#60a5fa', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#60a5fa', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                         Q{m.precio_venta}
                     </span>
                 )}
             </div>
         </td>
-        <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-            {m.descripcion && <div>📝 {m.descripcion}</div>}
-            {m.fecha_entrega && (
-                <div style={{ color: '#fbbf24', marginTop: '2px' }}>
-                    📅 Entregar: {m.fecha_entrega}
-                </div>
-            )}
+        <td data-label="Detalles">
+            <div style={{ maxWidth: '250px' }}>
+                {m.descripcion && <div style={{ fontSize: '0.85rem' }}>{m.descripcion}</div>}
+                {m.fecha_entrega && (
+                    <div style={{ color: '#fbbf24', fontSize: '0.75rem', marginTop: '4px', fontWeight: 500 }}>
+                        📅 Entrega: {m.fecha_entrega}
+                    </div>
+                )}
+            </div>
         </td>
     </tr>
 );
@@ -209,33 +205,42 @@ const BatchRow = ({ items }: { items: any[] }) => {
 
     return (
         <>
-            <tr
-                onClick={() => setExpanded(!expanded)}
-                style={{ cursor: 'pointer', background: expanded ? '#1e293b' : 'transparent', borderLeft: '4px solid #3b82f6', marginBottom: expanded ? 0 : '0.5rem' }}
-            >
-                <td style={{ whiteSpace: 'nowrap', color: '#cbd5e1', fontSize: '0.85rem' }}>
+            <tr className={styles.batchRow} onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
+                <td data-label="Fecha/Usuario">
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <button
-                            style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', marginRight: '0.5rem', cursor: 'pointer', fontSize: '1.2rem' }}
-                        >
-                            {expanded ? '[-]' : '[+]'}
-                        </button>
-                        <span>{new Date(first.created_at || first.fecha).toLocaleString()}</span>
+                        <div className={styles.toggleBtn} style={{ marginRight: '0.75rem' }}>
+                            {expanded ? '−' : '+'}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                                {new Date(first.created_at || first.fecha).toLocaleString()}
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                📦 Operación por Lote
+                            </span>
+                        </div>
                     </div>
                 </td>
-                <td>
+                <td data-label="Operación">
                     <span className={`${styles.badge} ${styles[first.tipo]}`}>
                         LOTE {first.tipo === 'entrada' ? 'INGRESO' : first.tipo.toUpperCase()}
                     </span>
                 </td>
-                <td colSpan={2}>
-                    <div style={{ fontWeight: 600, color: '#e2e8f0' }}>
-                        📦 {items.length} ítems procesados
+                <td data-label="Artículo">
+                    <div style={{ fontWeight: 600 }}>
+                        {items.length} ítems procesados
                     </div>
-                    {totalVenta > 0 && <div style={{ color: '#60a5fa', fontSize: '0.85rem', marginTop: '2px' }}>Total Venta: Q{totalVenta}</div>}
+                    {totalVenta > 0 && <div style={{ color: '#60a5fa', fontSize: '0.85rem' }}>Total: Q{totalVenta}</div>}
                 </td>
-                <td>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Total: {totalQty} un.</div>
+                <td data-label="Cantidad">
+                    <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f8fafc' }}>
+                        {totalQty} un.
+                    </div>
+                </td>
+                <td data-label="Detalles">
+                    <div style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic' }}>
+                        Click para {expanded ? 'contraer' : 'ver detalles'}
+                    </div>
                 </td>
             </tr>
             {expanded && items.map(m => <SingleRow key={m.id} m={m} isChild />)}

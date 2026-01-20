@@ -14,6 +14,7 @@ import { BottomNavbar } from './components/Navigation/BottomNavbar';
 import { useMovimientos } from './hooks/useMovimientos';
 import { InventoryAgent } from './components/InventoryAgent/InventoryAgent';
 import { HistoryModal } from './components/HistoryModal/HistoryModal';
+import { Toaster, toast } from 'sonner';
 
 /**
  * Main Application Component.
@@ -71,50 +72,53 @@ function App() {
 
     useEffect(() => {
         const fetchMovements = async () => {
-            const { success, data } = await getRecentMovements(50); // Fetch more to allow grouping
+            const { success, data } = await getRecentMovements(100);
             if (success && data) {
-                // Grouping by type + model (color) + date (to group batches)
-                const groupedMap: Record<string, {
-                    tipo: string;
-                    modelo: string;
-                    equipo: string;
-                    usuario: string; // Add usuario to type
-                    tallas: Record<string, number>;
-                }> = {};
+                // 1. Filter by categories
+                const sales = data.filter((m: any) => m.tipo === 'venta');
+                const samples = data.filter((m: any) => m.tipo === 'a_muestra');
+                const entries = data.filter((m: any) => m.tipo === 'entrada');
 
-                data.forEach((m: any) => {
-                    const tipoKey = m.tipo === 'entrada' ? 'INGRESO' :
-                        m.tipo === 'salida' ? 'EGRESO' :
-                            m.tipo === 'venta' ? 'VENTA' : 'MOVIMIENTO';
-                    const modelo = m.camisolas?.color || 'Modelo';
-                    const equipo = m.camisolas?.equipo || '';
-                    const usuario = m.usuario ? m.usuario.split('@')[0].toUpperCase() : 'SISTEMA';
+                const segments = [];
 
-                    // Key to group by: Type + Model Name + User (so we don't merge different users' actions if they happen close)
-                    const key = `${tipoKey}_${modelo}_${equipo}_${usuario}`;
+                // 1. BIENVENIDA & STATUS
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const currentUserName = session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'ADMIN';
+                segments.push(`[${timeStr}] WALWEB INVENTARIO V2.0 ::: STATUS: OPERATIVO ::: BIENVENIDO ${currentUserName.toUpperCase()}`);
 
-                    if (!groupedMap[key]) {
-                        groupedMap[key] = {
-                            tipo: tipoKey,
-                            modelo: modelo.toUpperCase(),
-                            equipo: equipo.toUpperCase(),
-                            usuario,
-                            tallas: {}
-                        };
-                    }
+                // 2. VENTAS (Líneas dedicadas)
+                if (sales.length > 0) {
+                    sales.slice(0, 5).forEach((m: any) => {
+                        const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        segments.push(`💸 VENTA [${time}]: ${m.camisolas?.equipo} (${m.talla}) x${m.cantidad}`);
+                    });
+                } else {
+                    segments.push(`💸 VENTAS: ESPERANDO PRIMER "GOAL" DEL DÍA ::: ¡VAMOS POR ESAS VENTAS! ⚽`);
+                }
 
-                    groupedMap[key].tallas[m.talla] = (groupedMap[key].tallas[m.talla] || 0) + m.cantidad;
-                });
+                // 3. EN MUESTRA (Líneas dedicadas)
+                if (samples.length > 0) {
+                    samples.slice(0, 5).forEach((m: any) => {
+                        segments.push(`📋 MOSTRANDO: ${m.camisolas?.equipo} ::: CALIDAD PREMIUM G5`);
+                    });
+                } else {
+                    segments.push(`📋 MUESTRAS: TODO EL STOCK ESTÁ EN ALMACÉN ::: LISTO PARA SALIR`);
+                }
 
-                const texts = Object.values(groupedMap).map(g => {
-                    const tallasStr = Object.entries(g.tallas)
-                        .map(([talla, qty]) => `${talla}(${qty})`)
-                        .join(', ');
-                    return `[${g.usuario}] ${g.tipo}: ${g.modelo} (${g.equipo}) - [${tallasStr}]`;
-                });
+                // 4. DISPONIBLES / ENTRADAS (Líneas dedicadas o Datos Interesantes)
+                if (entries.length > 0) {
+                    entries.slice(0, 5).forEach((m: any) => {
+                        segments.push(`🚀 NUEVO INGRESO: ${m.camisolas?.equipo} - ¡STOCK RENOVADO!`);
+                    });
+                } else {
+                    const totalUnits = inventario.reduce((acc, curr) => acc + curr.cantidad, 0);
+                    const sortedInventario = [...inventario].sort((a, b) => (b.vendidas || 0) - (a.vendidas || 0));
+                    const bestSeller = sortedInventario[0];
+                    segments.push(`📊 DATA: ${totalUnits} UNIDADES TOTALES EN STOCK ::: TOP VENTAS: ${bestSeller?.equipo || 'Cargando...'}`);
+                }
 
-                // Show only the last 2 distinct movements
-                setMovementTexts(texts.length > 0 ? texts.slice(0, 2) : ['SIN MOVIMIENTOS RECIENTES']);
+                setMovementTexts(segments);
             }
         };
 
@@ -152,9 +156,10 @@ function App() {
             if (!session?.user?.email) return;
             const result = await resetAllInventario(session.user.email);
             if (result.success) {
-                window.location.reload();
+                toast.success('Inventario reiniciado correctamente');
+                setTimeout(() => window.location.reload(), 1500);
             } else {
-                alert('Error al reiniciar el inventario: ' + result.error);
+                toast.error('Error al reiniciar el inventario: ' + result.error);
             }
         }
     };
@@ -216,7 +221,7 @@ function App() {
                             {isAdmin && (
                                 <>
                                     <button
-                                        className="secondary-button"
+                                        className="secondary-button history-button"
                                         onClick={() => setIsHistoryOpen(true)}
                                         title="Ver registro de movimientos"
                                     >
@@ -261,6 +266,21 @@ function App() {
                     <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
                 </>
             )}
+            <Toaster
+                position="top-center"
+                richColors
+                theme="dark"
+                closeButton
+                toastOptions={{
+                    style: {
+                        background: 'rgba(15, 23, 42, 0.9)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        color: '#f8fafc',
+                        fontFamily: 'inherit'
+                    }
+                }}
+            />
         </div>
     );
 }

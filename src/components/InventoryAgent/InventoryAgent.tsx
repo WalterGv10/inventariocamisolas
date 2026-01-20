@@ -45,7 +45,6 @@ export const InventoryAgent: React.FC<InventoryAgentProps> = ({
 
     // History Marquee Content
     const displayUserName = userName || (userEmail ? userEmail.split('@')[0].split('.')[0] : 'Usuario');
-    const greeting = `¡HOLA ${displayUserName.toUpperCase()}!`;
 
     // --- Interaction Handlers ---
 
@@ -114,13 +113,27 @@ export const InventoryAgent: React.FC<InventoryAgentProps> = ({
                 <div className={styles.interactionArea}>
                     <div className={styles.textDisplay}>
                         {mode === 'history' ? (
-                            <div className={styles.doubleLineContainer}>
-                                <div className={styles.staticLine}>
-                                    <span className={styles.promptIcon}>👋</span> {greeting}
+                            <div className={styles.tripleLineContainer}>
+                                <div className={styles.ledLine}>
+                                    <span className={styles.lineLabel}>BIENVENIDA:</span>
+                                    <div className={styles.lineMarquee}>
+                                        <div className={styles.lineMarqueeText}>¡HOLA {displayUserName.toUpperCase()}! ::: {recentMovements[0]}</div>
+                                    </div>
                                 </div>
-                                <div className={styles.marqueeContainer}>
-                                    <div className={styles.marqueeText}>
-                                        {recentMovements.length > 0 ? recentMovements.join('   •   ') : 'Esperando movimientos...'}
+                                <div className={styles.ledLine} style={{ color: '#fbbf24' }}>
+                                    <span className={styles.lineLabel}>VENTAS:</span>
+                                    <div className={styles.lineMarquee}>
+                                        <div className={styles.lineMarqueeText} style={{ animationDuration: '15s', color: '#fbbf24' }}>
+                                            {recentMovements.filter(m => m.includes('VENTA')).join('  :::  ') || 'ESPERANDO PRIMER GOAL DEL DÍA ⚽'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.ledLine} style={{ color: '#10b981' }}>
+                                    <span className={styles.lineLabel}>STOCK:</span>
+                                    <div className={styles.lineMarquee}>
+                                        <div className={styles.lineMarqueeText} style={{ animationDuration: '20s', color: '#10b981' }}>
+                                            {recentMovements.filter(m => !m.includes('VENTA') && !m.includes('WALWEB')).join('  :::  ')}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
