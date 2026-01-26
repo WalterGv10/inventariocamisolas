@@ -6,6 +6,8 @@ import { MediaModal } from './MediaModal/MediaModal';
 interface DashboardProps {
     inventario: InventarioConDetalles[];
     camisolas: Camisola[];
+    profile?: { role: 'admin' | 'viewer' } | null;
+    onOpenHistory: () => void;
 }
 
 interface TeamStats {
@@ -32,28 +34,8 @@ const TEAM_LOGOS: Record<string, string> = {
 
 /**
  * Dashboard Component.
- * 
- * Displays key inventory statistics and visual breakdowns by team and model.
- * Features specialized tabs for:
- * - Stock: Items currently available.
- * - Samples: Items marked for display/marketing.
- * - Sales: Items sold.
- * 
- * Includes interactive elements to view product details/media via `MediaModal`.
- * 
- * ---
- * 
- * Componente Tablero (Dashboard).
- * 
- * Muestra estadísticas clave del inventario y desgloses visuales por equipo y modelo.
- * Cuenta con pestañas especializadas para:
- * - Stock: Artículos disponibles actualmente.
- * - Muestras: Artículos marcados para exhibición/marketing.
- * - Ventas: Artículos vendidos.
- * 
- * Incluye elementos interactivos para ver detalles/multimedia del producto vía `MediaModal`.
  */
-export function Dashboard({ inventario, camisolas }: DashboardProps) {
+export function Dashboard({ inventario, camisolas, onOpenHistory }: DashboardProps) {
     const [mode, setMode] = useState<DashboardMode>('stock');
     const [selectedMedia, setSelectedMedia] = useState<{
         isOpen: boolean;
@@ -66,7 +48,7 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
     const teamStats = useMemo(() => {
         const stats: Record<string, TeamStats> = {};
 
-        // 1. Initialize structure with ALL available teams and colors
+        // 1. Initialize structure
         camisolas.forEach(c => {
             if (!stats[c.equipo]) {
                 stats[c.equipo] = {
@@ -77,13 +59,10 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                     detallesPorModelo: {}
                 };
             }
-            // Ensure color key exists
             if (!stats[c.equipo].porColor[c.color]) {
                 stats[c.equipo].porColor[c.color] = 0;
             }
-            // Initialize model details
             if (!stats[c.equipo].detallesPorModelo[c.color]) {
-                // Helper to get best image
                 let bestImage = c.image_url;
                 if (c.gallery_urls && c.gallery_urls.length > 0) {
                     const oneImg = c.gallery_urls.find((u: string) => /\/1\.(jpeg|jpg|png|webp)(\?|$)/i.test(u));
@@ -103,7 +82,6 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
 
         // 2. Fill with inventory data
         inventario.forEach((item) => {
-            // Safety check in case inventory has a team not in camisolas (unlikely but safe)
             if (!stats[item.equipo]) {
                 stats[item.equipo] = {
                     equipo: item.equipo,
@@ -126,7 +104,6 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
             if (item.color) {
                 team.porColor[item.color] = (team.porColor[item.color] || 0) + count;
 
-                // Update Detailed Model Stats
                 if (!team.detallesPorModelo[item.color]) {
                     team.detallesPorModelo[item.color] = {
                         color: item.color,
@@ -153,16 +130,21 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
 
     return (
         <div className={styles.dashboardWrapper}>
-            <div className={styles.tabSelector}>
-                {(['stock', 'muestras', 'vendidas'] as DashboardMode[]).map((m) => (
-                    <button
-                        key={m}
-                        className={`${styles.tabButton} ${mode === m ? styles.activeTab : ''} ${styles[m]}`}
-                        onClick={() => setMode(m)}
-                    >
-                        {modeLabels[m]}
-                    </button>
-                ))}
+            <div className={styles.controlsRow}>
+                <div className={styles.tabSelector}>
+                    {(['stock', 'muestras', 'vendidas'] as DashboardMode[]).map((m) => (
+                        <button
+                            key={m}
+                            className={`${styles.tabButton} ${mode === m ? `${styles.activeTab} ${styles[m]}` : ''}`}
+                            onClick={() => setMode(m)}
+                        >
+                            <span className={styles.tabIcon}>
+                                {m === 'stock' ? '📦' : m === 'muestras' ? '🔍' : '💰'}
+                            </span>
+                            {modeLabels[m].replace(/📦|🔍|💰/g, '').trim()}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className={styles.dashboardGrid}>
@@ -179,7 +161,6 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                         </div>
 
                         <div className={styles.statsLayout}>
-                            {/* Tallas */}
                             <div className={styles.section}>
                                 <span className={styles.sectionLabel}>Distribución por Talla</span>
                                 <div className={styles.sizeRow}>
@@ -192,7 +173,6 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                                 </div>
                             </div>
 
-                            {/* Detalles por Modelo */}
                             <div className={styles.section}>
                                 <span className={styles.sectionLabel}>Detalle por Modelo</span>
                                 <div className={styles.modelList}>
@@ -224,12 +204,10 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                                                 </div>
                                                 <div className={styles.modelSizes}>
                                                     {Object.entries(model.porTalla).map(([talla, cantidad]) => (
-                                                        (cantidad > 0 || model.total === 0) && (
-                                                            cantidad > 0 ? (
-                                                                <span key={talla} className={styles.miniSizeBadge}>
-                                                                    {talla}: <strong>{cantidad}</strong>
-                                                                </span>
-                                                            ) : null
+                                                        cantidad > 0 && (
+                                                            <span key={talla} className={styles.miniSizeBadge}>
+                                                                {talla}: <strong>{cantidad}</strong>
+                                                            </span>
                                                         )
                                                     ))}
                                                     {model.total === 0 && <span className={styles.miniSizeBadge} style={{ opacity: 0.5 }}>Sin stock</span>}
@@ -241,9 +219,15 @@ export function Dashboard({ inventario, camisolas }: DashboardProps) {
                         </div>
                     </div>
                 ))}
-                {teamStats.length === 0 && (
-                    <div className={styles.emptyState}>No hay datos para mostrar en esta categoría</div>
-                )}
+            </div>
+
+            <div className={styles.bottomActions}>
+                <button
+                    className={styles.historyBtn}
+                    onClick={onOpenHistory}
+                >
+                    📜 Ver Historial Completo
+                </button>
             </div>
 
             <MediaModal

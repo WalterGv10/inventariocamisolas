@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { MovimientoInventario } from '../types';
+import { isHardcodedAdmin } from '../utils/security';
 
 /**
  * Custom hook for Inventory Operations/Movements.
@@ -140,10 +141,8 @@ export function useMovimientos() {
     };
 
     const resetAllInventario = async (userEmail: string) => {
-        const AUTHORIZED_EMAILS = ['waltercito.94@gmail.com', 'damarisapg@gmail.com'];
-
-        if (!userEmail || !AUTHORIZED_EMAILS.includes(userEmail)) {
-            return { success: false, error: 'No tienes permiso para realizar esta acción. Solo administradores autorizados.' };
+        if (!userEmail) {
+            return { success: false, error: 'Debes iniciar sesión para realizar esta acción.' };
         }
 
         try {
@@ -186,9 +185,9 @@ export function useMovimientos() {
         }
     };
 
+
     const clearAllMovements = async (userEmail: string) => {
-        const AUTHORIZED_EMAILS = ['waltercito.94@gmail.com', 'damarisapg@gmail.com'];
-        if (!userEmail || !AUTHORIZED_EMAILS.includes(userEmail)) {
+        if (!isHardcodedAdmin(userEmail)) {
             return { success: false, error: 'No autorizado' };
         }
 

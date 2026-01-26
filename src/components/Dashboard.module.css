@@ -7,28 +7,102 @@
     /* Center children */
 }
 
+.controlsRow {
+    display: flex;
+    justify-content: center;
+    /* Center the tabs when history is moved */
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
 .tabSelector {
     display: flex;
-    gap: 0.5rem;
-    background: var(--bg-card);
-    padding: 0.25rem;
-    border-radius: 8px;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.4);
+    /* Darker for better contrast */
+    padding: 4px;
+    border-radius: 12px;
     border: 1px solid var(--border-light);
-    /* align-self: flex-start;  Removed to allow centering */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.bottomActions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.historyBtn {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    padding: 0.8rem 2rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.historyBtn:hover {
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary);
 }
 
 .tabButton {
-    padding: 0.4rem 1rem;
-    /* Smaller button */
+    padding: 0.6rem 1.25rem;
     border: none;
     background: transparent;
     color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.8rem;
+    font-weight: 600;
+    font-size: 0.85rem;
     cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.activeTab {
+    background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.activeTab.stock {
+    background: #10b981 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+}
+
+.activeTab.muestras {
+    background: #3b82f6 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+.activeTab.vendidas {
+    background: #fbbf24 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4) !important;
+}
+
+.tabIcon {
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
 /* Grids */
@@ -228,25 +302,35 @@
         /* Force single column */
     }
 
+    .controlsRow {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
     .tabSelector {
         width: 100%;
         display: flex;
-        overflow-x: auto;
         justify-content: space-between;
         gap: 2px;
-        padding: 2px;
+        padding: 4px;
     }
 
     .tabButton {
         flex: 1;
-        padding: 0.5rem 0.1rem;
-        font-size: 0.65rem;
-        text-align: center;
-        white-space: nowrap;
-        min-width: 0;
-        display: flex;
+        padding: 0.6rem 0.2rem;
+        font-size: 0.7rem;
         justify-content: center;
-        align-items: center;
+    }
+
+    .historyBtn {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.25rem;
+    }
+
+    .tabIcon {
+        font-size: 0.9rem;
     }
 
 

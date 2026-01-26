@@ -1,29 +1,12 @@
 import styles from './Navigation.module.css';
 
 interface BottomNavbarProps {
-    currentView: 'dashboard' | 'inventory';
-    onViewChange: (view: 'dashboard' | 'inventory') => void;
+    currentView: 'dashboard' | 'orders';
+    onViewChange: (view: 'dashboard' | 'orders') => void;
     onAddClick: () => void;
     isAdmin: boolean;
 }
 
-/**
- * Bottom Navigation Bar (Mobile Only).
- * 
- * Provides quick access to main views on small screens:
- * - Summary/Dashboard Tab.
- * - Floating Action Button (FAB) for adding entries (Admin only).
- * - Inventory Tab.
- * 
- * ---
- * 
- * Barra de Navegación Inferior (Solo Móvil).
- * 
- * Proporciona acceso rápido a las vistas principales en pantallas pequeñas:
- * - Pestaña Resumen/Tablero.
- * - Botón de Acción Flotante (FAB) para agregar entradas (Solo Admin).
- * - Pestaña Inventario.
- */
 export function BottomNavbar({ currentView, onViewChange, onAddClick, isAdmin }: BottomNavbarProps) {
     return (
         <nav className={styles.bottomNavbar}>
@@ -44,11 +27,11 @@ export function BottomNavbar({ currentView, onViewChange, onAddClick, isAdmin }:
             )}
 
             <button
-                className={`${styles.mobileNavItem} ${currentView === 'inventory' ? styles.active : ''}`}
-                onClick={() => onViewChange('inventory')}
+                className={`${styles.mobileNavItem} ${currentView === 'orders' ? styles.active : ''}`}
+                onClick={() => onViewChange('orders')}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                <span>Inventario</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+                <span>Pedidos</span>
             </button>
         </nav>
     );

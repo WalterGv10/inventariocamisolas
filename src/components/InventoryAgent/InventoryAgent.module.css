@@ -4,49 +4,25 @@
     position: relative;
     z-index: 950;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    margin: 0.5rem auto 1.5rem auto;
-    /* Spacing for flow */
-    width: 95%;
-    max-width: 600px;
+    margin: 0;
+    width: 100%;
     display: flex;
     justify-content: center;
-    pointer-events: none;
-    /* Child enables pointer-events */
-}
-
-@media (min-width: 1024px) {
-    .agentContainer {
-        position: fixed;
-        top: auto;
-        bottom: 2rem;
-        right: 2rem;
-        left: auto;
-        margin: 0;
-        transform: none;
-        width: 350px;
-    }
 }
 
 .terminalWindow {
     background: #000;
-    /* LED Black */
-    border: 2px solid #222;
-    border-radius: 8px;
-    padding: 0.35rem 0.8rem;
-    box-shadow:
-        0 4px 25px rgba(0, 0, 0, 0.9),
-        inset 0 0 15px rgba(255, 0, 0, 0.05),
-        0 0 5px rgba(255, 62, 62, 0.1);
+    border: none;
+    padding: 0.5rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0;
     position: relative;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     backdrop-filter: blur(8px);
-    width: 95vw;
-    max-width: 650px;
-    min-height: 40px;
+    width: 100%;
+    min-height: 80px;
+    /* Increased height for 4 lines */
     pointer-events: auto;
     cursor: pointer;
 }
@@ -72,15 +48,25 @@
 .terminalWindow.expanded {
     background: rgba(10, 15, 30, 0.98);
     border-color: rgba(59, 130, 246, 0.6);
-    width: 350px;
+    width: 95%;
+    /* More width on mobile */
+    max-width: 600px;
     border-radius: 12px;
     padding: 1rem;
     cursor: default;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
-.terminalWindow:focus-within {
-    border-color: rgba(59, 130, 246, 0.8);
+.terminalWindow.minimized {
+    min-height: 32px;
+    height: 32px;
+    padding: 0 1rem;
+    border-radius: 4px;
+    background: #000;
+}
+
+.minimizedContainer {
+    margin-bottom: 0px;
 }
 
 .statusLine {
@@ -92,7 +78,7 @@
 }
 
 .prompt {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #10b981;
     font-weight: 700;
     letter-spacing: 1px;
@@ -100,6 +86,73 @@
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.windowControls {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.minimizeBtn,
+.closeBtn {
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    opacity: 0.4;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.minimizeBtn:hover,
+.closeBtn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.minimizedTab {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: pulseLed 3s infinite;
+}
+
+.minimizedTitle {
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #10b981;
+}
+
+.expandIcon {
+    font-size: 0.7rem;
+    color: #fff;
+    opacity: 0.6;
+}
+
+@keyframes pulseLed {
+    0% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    100% {
+        opacity: 0.8;
+    }
 }
 
 .interactionArea {
@@ -133,12 +186,37 @@
     color: #f8fafc;
 }
 
-/* Triple Line LED Layout */
-.tripleLineContainer {
+/* LED Panel Layout */
+.ledPanel {
     display: flex;
     flex-direction: column;
     gap: 4px;
     width: 100%;
+    padding: 4px 0;
+}
+
+.welcomeLine {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.welcomeLabel {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.statusGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .ledLine {
@@ -148,18 +226,13 @@
     font-size: 0.7rem;
     font-weight: 800;
     color: #3b82f6;
-    /* Default Blue for Welcome */
-    background: rgba(0, 0, 0, 0.4);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border-left: 2px solid currentColor;
+    min-width: 0;
 }
 
 .lineLabel {
     flex-shrink: 0;
-    width: 75px;
-    opacity: 0.7;
-    font-size: 0.6rem;
+    opacity: 0.6;
+    font-size: 0.55rem;
     letter-spacing: 0.5px;
 }
 
@@ -173,9 +246,11 @@
 .lineMarqueeText {
     display: inline-block;
     padding-left: 100%;
-    animation: marquee 15s linear infinite;
-    text-shadow: 0 0 8px currentColor;
+    animation: marquee 25s linear infinite;
+    text-shadow: 0 0 12px currentColor;
     text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 }
 
 @keyframes marquee {

@@ -1,0 +1,196 @@
+.container {
+    padding: 1rem;
+    color: #f1f5f9;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: #475569;
+}
+
+.statusInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge.pendiente,
+.badge.pendiente_recibir,
+.badge.pendiente_despacho {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.badge.entregado,
+.badge.recibido,
+.badge.despachado {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge.cancelado {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.typeBadge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: #0f172a;
+}
+
+.typeBadge[data-type="abastecimiento"] {
+    color: #38bdf8;
+    border: 1px solid #38bdf8;
+}
+
+.typeBadge[data-type="despacho"] {
+    color: #f472b6;
+    border: 1px solid #f472b6;
+}
+
+.typeBadge[data-type="venta"] {
+    color: #c084fc;
+    border: 1px solid #c084fc;
+}
+
+.clientName {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #e2e8f0;
+}
+
+.clientContact {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+
+.itemsList {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid #334155;
+    padding-top: 1rem;
+}
+
+.itemRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+}
+
+.totalSection {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #475569;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.totalLabel {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.totalValue {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #60a5fa;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.actionButton {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #334155;
+    background: transparent;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    background: #334155;
+    color: white;
+}
+
+.actionButton.complete:hover {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.actionButton.cancel:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.confirmationLog {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #34d399;
+    font-weight: 500;
+    text-align: center;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    color: #64748b;
+}

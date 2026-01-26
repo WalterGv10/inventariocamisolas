@@ -21,10 +21,26 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
     const [tipo, setTipo] = useState<MovementType>('entrada');
     const [precioVenta, setPrecioVenta] = useState<string>('');
     const [fechaEntrega, setFechaEntrega] = useState<string>('');
+    const [referencia, setReferencia] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const displayCamisolas = camisolas;
+    const displayCamisolas = useMemo(() => {
+        return camisolas.filter(c =>
+            c.equipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.color.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [camisolas, searchTerm]);
+    const groupedCamisolas = useMemo(() => {
+        const groups: Record<string, typeof camisolas> = {};
+        displayCamisolas.forEach(c => {
+            if (!groups[c.equipo]) groups[c.equipo] = [];
+            groups[c.equipo].push(c);
+        });
+        return groups;
+    }, [displayCamisolas]);
+
     const selectedCamisolas = useMemo(() => {
         return camisolas.filter(c => selectedIds.includes(c.id));
     }, [camisolas, selectedIds]);
@@ -78,7 +94,9 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                         tipo,
                         cantidad: qty,
                         fecha: new Date().toISOString().split('T')[0],
-                        descripcion: `Mov. Lote: ${tipo}`,
+                        descripcion: referencia
+                            ? `Mov. Lote (${tipo}): ${referencia}`
+                            : `Mov. Lote: ${tipo}`,
                         precio_venta: tipo === 'venta' && precioVenta ? parseFloat(precioVenta) : undefined,
                         fecha_entrega: tipo === 'a_muestra' && fechaEntrega ? fechaEntrega : undefined
                     });
@@ -125,6 +143,7 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
             setTipo('entrada');
             setPrecioVenta('');
             setFechaEntrega('');
+            setReferencia('');
             onClose();
         }
     };
@@ -164,42 +183,46 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                     </button>
                 </div>
 
-                <div className={styles.content}>
+                <div className={`${styles.content} ${step === 1 ? styles.stepOne : ''}`}>
                     {step === 1 && (
                         <>
-                            <div className={styles.productsGrid}>
-                                {displayCamisolas.map(camisola => {
-                                    const isSelected = selectedIds.includes(camisola.id);
-                                    const imgUrl = getProductImage(camisola);
-                                    return (
-                                        <div
-                                            key={camisola.id}
-                                            className={`${styles.productCard} ${isSelected ? styles.selected : ''}`}
-                                            onClick={() => toggleSelection(camisola.id)}
-                                        >
-                                            {isSelected && <div className={styles.selectionBadge}>✓</div>}
-                                            <div className={styles.cardImageWrapper}>
-                                                {imgUrl ? (
-                                                    <img src={imgUrl} alt={`${camisola.equipo}`} className={styles.cardImage} />
-                                                ) : (
-                                                    <div className={styles.cardImagePlaceholder}>{camisola.equipo.charAt(0)}</div>
-                                                )}
-                                            </div>
-                                            <div className={styles.cardInfo}>
-                                                <span className={styles.cardTeam}>{camisola.equipo}</span>
-                                                <span className={styles.cardModel}>{camisola.color}</span>
-                                            </div>
+                            <input
+                                type="text"
+                                className={styles.searchBar}
+                                placeholder="🔍 Buscar por equipo o color..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                            <div className={styles.groupedGrid}>
+                                {Object.entries(groupedCamisolas).map(([team, items]) => (
+                                    <div key={team} className={styles.teamSection}>
+                                        <h3 className={styles.teamTitle}>{team}</h3>
+                                        <div className={styles.productsGrid}>
+                                            {items.map(camisola => {
+                                                const isSelected = selectedIds.includes(camisola.id);
+                                                const imgUrl = getProductImage(camisola);
+                                                return (
+                                                    <div
+                                                        key={camisola.id}
+                                                        className={`${styles.productCard} ${isSelected ? styles.selected : ''}`}
+                                                        onClick={() => toggleSelection(camisola.id)}
+                                                        title={`${camisola.equipo} - ${camisola.color}`}
+                                                    >
+                                                        {isSelected && <div className={styles.selectionBadge}>✓</div>}
+                                                        <div className={styles.cardImageWrapper}>
+                                                            {imgUrl ? (
+                                                                <img src={imgUrl} alt={`${camisola.equipo}`} className={styles.cardImage} />
+                                                            ) : (
+                                                                <div className={styles.cardImagePlaceholder}>{camisola.equipo.charAt(0)}</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })}
+                                    </div>
+                                ))}
                             </div>
-                            {selectedIds.length > 0 && (
-                                <div className={styles.floatingFooter}>
-                                    <button className={styles.continueButton} onClick={handleContinue}>
-                                        Continuar ({selectedIds.length}) →
-                                    </button>
-                                </div>
-                            )}
                         </>
                     )}
 
@@ -208,19 +231,42 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                             <div className={styles.globalControls}>
                                 <label className={styles.sectionLabel}>Tipo de Movimiento</label>
                                 <div className={styles.typeGrid}>
-                                    {(['entrada', 'venta', 'a_muestra'] as const).map((t) => (
-                                        <button
-                                            key={t}
-                                            className={`${styles.typeBtn} ${tipo === t ? styles.active : ''}`}
-                                            onClick={() => setTipo(t)}
-                                            data-type={t}
-                                        >
-                                            <span className={styles.typeIcon}>{t === 'entrada' ? '📥' : t === 'venta' ? '💰' : '👁️'}</span>
-                                            <span>{t === 'entrada' ? 'Entrada' : t === 'venta' ? 'Venta' : 'En Muestra'}</span>
-                                        </button>
-                                    ))}
+                                    {(['entrada', 'salida', 'venta', 'a_muestra'] as const).map((t) => {
+                                        let label = '';
+                                        let icon = '';
+                                        switch (t) {
+                                            case 'entrada': label = 'Abastecer (Entrada)'; icon = '📥'; break;
+                                            case 'salida': label = 'Despachar (Salida)'; icon = '📤'; break;
+                                            case 'venta': label = 'Venta Directa'; icon = '💰'; break;
+                                            case 'a_muestra': label = 'Mover a Muestra'; icon = '👁️'; break;
+                                        }
+                                        return (
+                                            <button
+                                                key={t}
+                                                className={`${styles.typeBtn} ${tipo === t ? styles.active : ''}`}
+                                                onClick={() => setTipo(t)}
+                                                data-type={t}
+                                            >
+                                                <span className={styles.typeIcon}>{icon}</span>
+                                                <span>{label}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
+
+                            {(tipo === 'entrada' || tipo === 'salida') && (
+                                <div className={styles.extraInputSection}>
+                                    <label>Referencia / No. Pedido (Opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder={tipo === 'entrada' ? "Ej. Factura #123" : "Ej. Envío #456"}
+                                        value={referencia}
+                                        onChange={e => setReferencia(e.target.value)}
+                                        className={styles.mainInput}
+                                    />
+                                </div>
+                            )}
 
                             {tipo === 'venta' && (
                                 <div className={styles.extraInputSection}>
@@ -267,14 +313,28 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                                     return (
                                                         <div key={t} className={`${styles.sizeCompactInput} ${qty > 0 ? styles.hasQty : ''}`}>
                                                             <span className={styles.sizeLabel}>{t}</span>
-                                                            <input
-                                                                type="text"
-                                                                inputMode="numeric"
-                                                                placeholder="-"
-                                                                className={styles.qtyCompactInput}
-                                                                value={qty === 0 ? '' : qty}
-                                                                onChange={(e) => handleQuantityChange(camisola.id, t, e.target.value)}
-                                                            />
+                                                            <div className={styles.counterWrapper}>
+                                                                <button
+                                                                    className={styles.counterBtn}
+                                                                    onClick={() => handleQuantityChange(camisola.id, t, (qty - 1).toString())}
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <input
+                                                                    type="text"
+                                                                    inputMode="numeric"
+                                                                    placeholder="0"
+                                                                    className={styles.qtyCompactInput}
+                                                                    value={qty === 0 ? '' : qty}
+                                                                    onChange={(e) => handleQuantityChange(camisola.id, t, e.target.value)}
+                                                                />
+                                                                <button
+                                                                    className={styles.counterBtn}
+                                                                    onClick={() => handleQuantityChange(camisola.id, t, (qty + 1).toString())}
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
@@ -283,20 +343,31 @@ export function StockMovementModal({ isOpen, onClose }: StockMovementModalProps)
                                     );
                                 })}
                             </div>
-
-                            <div className={styles.actions}>
-                                <button className={styles.backButton} onClick={handleBack}>← Volver</button>
-                                <button
-                                    className={styles.submitButton}
-                                    onClick={handleSubmit}
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? 'Procesando...' : 'Confirmar Todo'}
-                                </button>
-                            </div>
                         </div>
                     )}
                 </div>
+
+                {/* Fixed Footers outside scroll area */}
+                {step === 1 && selectedIds.length > 0 && (
+                    <div className={styles.floatingFooter}>
+                        <button className={styles.continueButton} onClick={handleContinue}>
+                            Continuar ({selectedIds.length}) →
+                        </button>
+                    </div>
+                )}
+
+                {step === 2 && (
+                    <div className={styles.actions}>
+                        <button className={styles.backButton} onClick={handleBack}>← Volver</button>
+                        <button
+                            className={styles.submitButton}
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Procesando...' : 'Confirmar Todo'}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

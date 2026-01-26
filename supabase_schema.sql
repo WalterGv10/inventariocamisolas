@@ -10,7 +10,57 @@ CREATE TABLE IF NOT EXISTS public.camisolas (
   equipo TEXT NOT NULL,
   color TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  image_url TEXT
 );
+
+-- Table: profiles (User Profiles)
+-- Extends the auth.users table
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  email TEXT,
+  role TEXT DEFAULT 'viewer' CHECK (role IN ('admin', 'viewer')),
+  full_name TEXT,
+  avatar_url TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS on profiles
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Profiles Policies
+CREATE POLICY "Public profiles are viewable by everyone" 
+  ON public.profiles FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Users can insert their own profile" 
+  ON public.profiles FOR INSERT 
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" 
+  ON public.profiles FOR UPDATE 
+  USING (auth.uid() = id);
+
+-- Trigger to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (
+    new.id, 
+    new.email, 
+    new.raw_user_meta_data->>'full_name',
+    'viewer' -- Default role
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger execution
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- Table: inventario (Inventory/Stock)
 -- Stores current stock levels for each product variant (jersey + size)
@@ -70,17 +120,20 @@ CREATE POLICY "Allow public read access on movimientos"
   USING (true);
 
 -- Allow public write access (IMPORTANT: Update these policies for production!)
--- In production, you should restrict these to authenticated users only
-CREATE POLICY "Allow public insert on inventario" 
+-- Allow authenticated write access
+CREATE POLICY "Allow authenticated insert on inventario" 
   ON public.inventario FOR INSERT 
+  TO authenticated
   WITH CHECK (true);
 
-CREATE POLICY "Allow public update on inventario" 
+CREATE POLICY "Allow authenticated update on inventario" 
   ON public.inventario FOR UPDATE 
+  TO authenticated
   USING (true);
 
-CREATE POLICY "Allow public insert on movimientos" 
+CREATE POLICY "Allow authenticated insert on movimientos" 
   ON public.movimientos_inventario FOR INSERT 
+  TO authenticated
   WITH CHECK (true);
 
 -- ============================================
@@ -126,4 +179,77 @@ SELECT
   i.updated_at
 FROM public.inventario i
 INNER JOIN public.camisolas c ON i.camisola_id = c.id
-ORDER BY c.equipo, c.color, i.talla;
+
+-- ============================================
+-- Order Module Tables
+-- ============================================
+
+-- Table: pedidos (Order Header)
+CREATE TABLE IF NOT EXISTS public.pedidos (
+  id BIGSERIAL PRIMARY KEY,
+  cliente_nombre TEXT NOT NULL,
+  cliente_contacto TEXT,
+  fecha_pedido TIMESTAMPTZ DEFAULT NOW(),
+  fecha_entrega DATE,
+  estado TEXT NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'entregado', 'cancelado')),
+  total NUMERIC NOT NULL DEFAULT 0,
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Table: items_pedido (Order Line Items)
+CREATE TABLE IF NOT EXISTS public.items_pedido (
+  id BIGSERIAL PRIMARY KEY,
+  pedido_id BIGINT NOT NULL REFERENCES public.pedidos(id) ON DELETE CASCADE,
+  tipo TEXT NOT NULL CHECK (tipo IN ('inventario', 'libre')),
+  camisola_id TEXT REFERENCES public.camisolas(id), -- Nullable for 'libre'
+  talla TEXT, -- Nullable for 'libre', strictly 'S','M','L','XL' if 'inventario' logic enforced at app level
+  descripcion TEXT NOT NULL, -- Auto-filled for inventory, manual for libre
+  cantidad INTEGER NOT NULL CHECK (cantidad > 0),
+  precio_unitario NUMERIC NOT NULL CHECK (precio_unitario >= 0)
+);
+
+-- Indexes for Orders
+CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON public.pedidos(estado);
+CREATE INDEX IF NOT EXISTS idx_items_pedido_pedido ON public.items_pedido(pedido_id);
+
+-- RLS for Orders
+ALTER TABLE public.pedidos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.items_pedido ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated read on pedidos" 
+  ON public.pedidos FOR SELECT 
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Allow authenticated insert on pedidos" 
+  ON public.pedidos FOR INSERT 
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated update on pedidos" 
+  ON public.pedidos FOR UPDATE 
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Allow authenticated read on items_pedido" 
+  ON public.items_pedido FOR SELECT 
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Allow authenticated insert on items_pedido" 
+  ON public.items_pedido FOR INSERT 
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated update on items_pedido" 
+  ON public.items_pedido FOR UPDATE 
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Allow authenticated delete on items_pedido" 
+  ON public.items_pedido FOR DELETE 
+  TO authenticated
+  USING (true);
+
